@@ -1,0 +1,31 @@
+---
+description: When the user says deploy, run ./deploy.sh for Studio backend
+alwaysApply: true
+---
+
+# Deploy command
+
+When the user asks to **deploy** (e.g. "deploy", "deploy backend", "deploy this"):
+
+1. Run from the repo root:
+   ```sh
+   ./deploy.sh
+   ```
+2. Do **not** invent a different deploy flow unless they explicitly ask for frontend/Sites deploy or extra flags.
+
+## Flags (only if the user asks)
+
+| Request | Command |
+| --- | --- |
+| Default / functions only | `./deploy.sh` |
+| Also push secrets | `./deploy.sh --secrets` |
+| Also push DB migrations | `./deploy.sh --db` |
+| Secrets + DB + functions | `./deploy.sh --all` |
+| One function | `./deploy.sh studio-chat` |
+
+## Notes
+
+- Script reads `.env.production` for `SUPABASE_ACCESS_TOKEN`.
+- Target project: `xmxsqmxuiksldqhtugvv`.
+- Frontend (OpenAI Sites / vinext) is separate — do not run it unless the user asks for frontend deploy.
+- If Supabase CLI is missing, the script uses `npx supabase`; if that fails, tell the user to install: `brew install supabase/tap/supabase`.

@@ -1,0 +1,55 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# Local secrets — never commit
+.env
+.env.*
+!.env*.example
+
+# Build / output
+dist/
+build/
+out/
+.next/
+.vinext/
+.wrangler/
+.vercel/
+outputs/
+work/
+coverage/
+
+# Caches
+.npm-cache/
+.turbo/
+*.tsbuildinfo
+
+# Logs / debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.pem
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# TypeScript
+next-env.d.ts
+
+# Supabase local
+supabase/.branches
+supabase/.temp
+supabase/functions/.env

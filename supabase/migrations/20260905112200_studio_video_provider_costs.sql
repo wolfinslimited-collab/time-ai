@@ -1,0 +1,23 @@
+-- Record verified provider-credit costs for the default settings.
+update public.studio_models set provider_credit_cost=112.0 where key='seedance-2-5';
+update public.studio_models set provider_credit_cost=76.0 where key='seedance-2';
+update public.studio_models set provider_credit_cost=47.2 where key='seedance-2-fast';
+update public.studio_models set provider_credit_cost=15.2 where key='seedance-2-mini';
+update public.studio_models set provider_credit_cost=24.48 where key='wan-3-prime';
+update public.studio_models set provider_credit_cost=32.0 where key='minimax-h3-video';
+update public.studio_models set provider_credit_cost=36.0 where key='minimax-h3-image';
+update public.studio_models set provider_credit_cost=45.0 where key='hailuo-2-3-pro';
+update public.studio_models set provider_credit_cost=30.0 where key='hailuo-2-3-standard';
+update public.studio_models set provider_credit_cost=54.0 where key='kling-3-turbo-text';
+update public.studio_models set provider_credit_cost=32.0 where key='wan-2-7-text';
+update public.studio_models set provider_credit_cost=67.5 where key='happyhorse-1-1-text';
+update public.studio_models set provider_credit_cost=7.2 where key='pixverse-v6-text';
+update public.studio_models set provider_credit_cost=54.0 where key='kling-3-turbo-image';
+update public.studio_models set provider_credit_cost=32.0 where key='wan-2-7-image';
+update public.studio_models set provider_credit_cost=67.5 where key='happyhorse-1-1-image';
+update public.studio_models set provider_credit_cost=7.2 where key='pixverse-v6-image';
+update public.studio_models set provider_credit_cost=14.4 where key='grok-imagine-video';
+update public.studio_models set provider_credit_cost=63.0 where key='gemini-omni-video';
+update public.studio_models set provider_credit_cost=63.0 where key='gemini-omni-flash-1-1';
+update public.studio_models set provider_credit_cost=36.0 where key='minimax-h3-reference';
+update public.studio_models set provider_credit_cost=2.4 where key='grok-video-1-5-preview';

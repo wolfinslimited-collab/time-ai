@@ -1,0 +1,754 @@
+{
+  "nano-banana-2-1k": {
+    "key": "nano-banana-2-1k",
+    "name": "Nano Banana 2",
+    "provider": "kie",
+    "provider_model_id": "nano-banana-2",
+    "media_type": "image",
+    "credit_cost": 8,
+    "provider_credit_cost": 8,
+    "description": "Fast image creation and editing from 1K drafts to 4K finals. Combine up to 14 reference images.",
+    "badge": "Popular",
+    "parameter_schema": {
+      "type": "object",
+      "properties": {
+        "resolution": {
+          "enum": [
+            "1K",
+            "2K",
+            "4K"
+          ],
+          "type": "string"
+        },
+        "aspect_ratio": {
+          "enum": [
+            "auto",
+            "1:1",
+            "3:2",
+            "2:3",
+            "4:3",
+            "3:4",
+            "16:9",
+            "9:16"
+          ],
+          "type": "string"
+        },
+        "output_format": {
+          "enum": [
+            "png",
+            "jpg"
+          ],
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "provider_config": {
+      "inputField": "image_input",
+      "defaultInput": {
+        "resolution": "1K",
+        "aspect_ratio": "auto",
+        "output_format": "png"
+      },
+      "referenceSlots": [
+        {
+          "key": "images",
+          "label": "Images",
+          "field": "image_input",
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ],
+          "max": 14,
+          "encoding": "urls",
+          "maxBytes": 10485760
+        }
+      ],
+      "maxInputs": 14,
+      "inputMimeTypes": [
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+      ],
+      "allowNegativePrompt": false,
+      "imageModel": "nano-banana-2",
+      "minInputs": 0
+    },
+    "credit_rules": {
+      "keys": [
+        "resolution"
+      ],
+      "rates": {
+        "1K": 7.14375012,
+        "2K": 10.71562517,
+        "4K": 16.07343776
+      },
+      "strategy": "matrix"
+    },
+    "is_active": true,
+    "sort_order": 10
+  },
+  "flux-2-flex-1k": {
+    "key": "flux-2-flex-1k",
+    "name": "FLUX.2 Flex",
+    "provider": "kie",
+    "provider_model_id": "flux-2/flex-text-to-image",
+    "media_type": "image",
+    "credit_cost": 13,
+    "provider_credit_cost": 14,
+    "description": "Detailed cinematic image generation with 1K and 2K output. Combine up to 8 reference images.",
+    "badge": null,
+    "parameter_schema": {
+      "type": "object",
+      "properties": {
+        "resolution": {
+          "enum": [
+            "1K",
+            "2K"
+          ],
+          "type": "string"
+        },
+        "aspect_ratio": {
+          "enum": [
+            "1:1",
+            "3:2",
+            "2:3",
+            "4:3",
+            "3:4",
+            "16:9",
+            "9:16"
+          ],
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "provider_config": {
+      "defaultInput": {
+        "resolution": "1K",
+        "aspect_ratio": "1:1"
+      },
+      "referenceSlots": [
+        {
+          "key": "images",
+          "label": "Images",
+          "field": "input_urls",
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ],
+          "max": 8,
+          "encoding": "urls",
+          "maxBytes": 10485760
+        }
+      ],
+      "maxInputs": 8,
+      "inputMimeTypes": [
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+      ],
+      "allowNegativePrompt": false,
+      "imageModel": "flux-2/flex-image-to-image",
+      "inputField": "input_urls",
+      "minInputs": 0
+    },
+    "credit_rules": {
+      "keys": [
+        "resolution"
+      ],
+      "rates": {
+        "1K": 12.5015627,
+        "2K": 21.43125034
+      },
+      "strategy": "matrix"
+    },
+    "is_active": true,
+    "sort_order": 20
+  },
+  "gpt-image-2": {
+    "key": "gpt-image-2",
+    "name": "GPT Image 2",
+    "provider": "kie",
+    "provider_model_id": "gpt-image-2-text-to-image",
+    "media_type": "image",
+    "credit_cost": 6,
+    "provider_credit_cost": 6,
+    "description": "Premium image rendering with precise text and 1K, 2K, or 4K output. Combine up to 16 reference images.",
+    "badge": "New",
+    "parameter_schema": {
+      "type": "object",
+      "properties": {
+        "resolution": {
+          "enum": [
+            "1K",
+            "2K",
+            "4K"
+          ],
+          "type": "string"
+        },
+        "aspect_ratio": {
+          "enum": [
+            "3:2",
+            "2:3",
+            "4:3",
+            "3:4",
+            "16:9",
+            "9:16"
+          ],
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "provider_config": {
+      "defaultInput": {
+        "resolution": "1K",
+        "aspect_ratio": "16:9"
+      },
+      "referenceSlots": [
+        {
+          "key": "images",
+          "label": "Images",
+          "field": "input_urls",
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ],
+          "max": 16,
+          "encoding": "urls",
+          "maxBytes": 10485760
+        }
+      ],
+      "maxInputs": 16,
+      "inputMimeTypes": [
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+      ],
+      "allowNegativePrompt": false,
+      "imageModel": "gpt-image-2-image-to-image",
+      "inputField": "input_urls",
+      "minInputs": 0
+    },
+    "credit_rules": {
+      "keys": [
+        "resolution"
+      ],
+      "rates": {
+        "1K": 5.35781259,
+        "2K": 8.92968764,
+        "4K": 14.28750023
+      },
+      "strategy": "matrix"
+    },
+    "is_active": true,
+    "sort_order": 30
+  },
+  "gpt-image-1-5": {
+    "key": "gpt-image-1-5",
+    "name": "GPT Image 1.5",
+    "provider": "kie",
+    "provider_model_id": "gpt-image/1.5-text-to-image",
+    "media_type": "image",
+    "credit_cost": 4,
+    "provider_credit_cost": 4,
+    "description": "Creative image generation with medium or high quality output. Combine up to 16 reference images.",
+    "badge": null,
+    "parameter_schema": {
+      "type": "object",
+      "properties": {
+        "quality": {
+          "enum": [
+            "medium",
+            "high"
+          ],
+          "type": "string"
+        },
+        "aspect_ratio": {
+          "enum": [
+            "1:1",
+            "2:3",
+            "3:2"
+          ],
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "provider_config": {
+      "defaultInput": {
+        "quality": "medium",
+        "aspect_ratio": "1:1"
+      },
+      "referenceSlots": [
+        {
+          "key": "images",
+          "label": "Images",
+          "field": "input_urls",
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ],
+          "max": 16,
+          "encoding": "urls",
+          "maxBytes": 10485760
+        }
+      ],
+      "maxInputs": 16,
+      "inputMimeTypes": [
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+      ],
+      "allowNegativePrompt": false,
+      "imageModel": "gpt-image/1.5-image-to-image",
+      "inputField": "input_urls",
+      "minInputs": 0
+    },
+    "credit_rules": {
+      "keys": [
+        "quality"
+      ],
+      "rates": {
+        "high": 19.64531281,
+        "medium": 3.57187506
+      },
+      "strategy": "matrix"
+    },
+    "is_active": true,
+    "sort_order": 40
+  },
+  "seedream-5-lite": {
+    "key": "seedream-5-lite",
+    "name": "Seedream 5.0 Lite",
+    "provider": "kie",
+    "provider_model_id": "seedream/5-lite-text-to-image",
+    "media_type": "image",
+    "credit_cost": 5,
+    "provider_credit_cost": 5.5,
+    "description": "Efficient photorealistic image generation for rapid exploration. Combine up to 14 reference images.",
+    "badge": "New",
+    "parameter_schema": {
+      "type": "object",
+      "properties": {
+        "quality": {
+          "enum": [
+            "basic"
+          ],
+          "type": "string"
+        },
+        "aspect_ratio": {
+          "enum": [
+            "1:1",
+            "3:2",
+            "2:3",
+            "4:3",
+            "3:4",
+            "16:9",
+            "9:16"
+          ],
+          "type": "string"
+        },
+        "output_format": {
+          "enum": [
+            "png",
+            "jpeg"
+          ],
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "provider_config": {
+      "defaultInput": {
+        "quality": "basic",
+        "aspect_ratio": "1:1",
+        "output_format": "png"
+      },
+      "referenceSlots": [
+        {
+          "key": "images",
+          "label": "Images",
+          "field": "image_urls",
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ],
+          "max": 14,
+          "encoding": "urls",
+          "maxBytes": 10485760
+        }
+      ],
+      "maxInputs": 14,
+      "inputMimeTypes": [
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+      ],
+      "allowNegativePrompt": false,
+      "imageModel": "seedream/5-lite-image-to-image",
+      "inputField": "image_urls",
+      "minInputs": 0
+    },
+    "credit_rules": {
+      "strategy": "fixed"
+    },
+    "is_active": true,
+    "sort_order": 50
+  },
+  "seedream-5-pro": {
+    "key": "seedream-5-pro",
+    "name": "Seedream 5.0 Pro",
+    "provider": "kie",
+    "provider_model_id": "seedream/5-pro-text-to-image",
+    "media_type": "image",
+    "credit_cost": 7,
+    "provider_credit_cost": 7,
+    "description": "Art-directed photorealistic imagery in 1K basic or 2K high quality. Combine up to 10 reference images.",
+    "badge": "Pro",
+    "parameter_schema": {
+      "type": "object",
+      "properties": {
+        "quality": {
+          "enum": [
+            "basic",
+            "high"
+          ],
+          "type": "string"
+        },
+        "aspect_ratio": {
+          "enum": [
+            "1:1",
+            "3:2",
+            "2:3",
+            "4:3",
+            "3:4",
+            "16:9",
+            "9:16"
+          ],
+          "type": "string"
+        },
+        "output_format": {
+          "enum": [
+            "png",
+            "jpeg"
+          ],
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "provider_config": {
+      "defaultInput": {
+        "quality": "basic",
+        "aspect_ratio": "1:1",
+        "output_format": "png"
+      },
+      "referenceSlots": [
+        {
+          "key": "images",
+          "label": "Images",
+          "field": "image_urls",
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ],
+          "max": 10,
+          "encoding": "urls",
+          "maxBytes": 10485760
+        }
+      ],
+      "maxInputs": 10,
+      "inputMimeTypes": [
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+      ],
+      "allowNegativePrompt": false,
+      "imageModel": "seedream/5-pro-image-to-image",
+      "inputField": "image_urls",
+      "minInputs": 0
+    },
+    "credit_rules": {
+      "keys": [
+        "quality"
+      ],
+      "rates": {
+        "high": 12.5015627,
+        "basic": 6.25078135
+      },
+      "strategy": "matrix",
+      "imageRate": 0.44648439,
+      "freeImages": 1
+    },
+    "is_active": true,
+    "sort_order": 60
+  },
+  "kling-3-video": {
+    "key": "kling-3-video",
+    "name": "Kling 3.0",
+    "provider": "kie",
+    "provider_model_id": "kling-3.0/video",
+    "media_type": "video",
+    "credit_cost": 63,
+    "provider_credit_cost": 70,
+    "description": "Expressive 3\u201315 second video with standard, pro, and 4K modes.",
+    "badge": "New",
+    "parameter_schema": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "enum": [
+            "std",
+            "pro",
+            "4K"
+          ],
+          "type": "string"
+        },
+        "sound": {
+          "type": "boolean"
+        },
+        "duration": {
+          "enum": [
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15"
+          ],
+          "type": "string"
+        },
+        "multi_shots": {
+          "enum": [
+            false
+          ],
+          "type": "boolean"
+        },
+        "aspect_ratio": {
+          "enum": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ],
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "provider_config": {
+      "maxInputs": 2,
+      "minInputs": 0,
+      "inputField": "image_urls",
+      "defaultInput": {
+        "mode": "std",
+        "sound": false,
+        "duration": "5",
+        "multi_shots": false,
+        "aspect_ratio": "16:9"
+      },
+      "inputMimeTypes": [
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+      ],
+      "referenceSlots": [
+        {
+          "key": "images",
+          "label": "Images",
+          "field": "image_urls",
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ],
+          "max": 2,
+          "encoding": "urls",
+          "maxBytes": 10485760
+        }
+      ],
+      "allowNegativePrompt": false,
+      "supportsShots": true
+    },
+    "credit_rules": {
+      "keys": [
+        "mode",
+        "sound"
+      ],
+      "rates": {
+        "4K|true": 59.82890719,
+        "4K|false": 59.82890719,
+        "pro|true": 24.11015663,
+        "std|true": 17.85937528,
+        "pro|false": 16.07343776,
+        "std|false": 12.5015627
+      },
+      "strategy": "matrix",
+      "multiplierKey": "duration"
+    },
+    "is_active": true,
+    "sort_order": 120
+  },
+  "wan-3-video": {
+    "key": "wan-3-video",
+    "name": "Wan 3.0",
+    "provider": "kie",
+    "provider_model_id": "wan/3-0-video",
+    "media_type": "video",
+    "credit_cost": 36,
+    "provider_credit_cost": 40,
+    "description": "Combine up to 10 images and 5 video references, or use first and last frames.",
+    "badge": "New",
+    "parameter_schema": {
+      "type": "object",
+      "properties": {
+        "audio": {
+          "type": "boolean"
+        },
+        "duration": {
+          "enum": [
+            5,
+            10,
+            15,
+            30
+          ],
+          "type": "integer"
+        },
+        "resolution": {
+          "enum": [
+            "480P",
+            "720P",
+            "1080P"
+          ],
+          "type": "string"
+        },
+        "aspect_ratio": {
+          "enum": [
+            "adaptive",
+            "16:9",
+            "9:16",
+            "1:1",
+            "4:3",
+            "3:4"
+          ],
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "provider_config": {
+      "maxInputs": 17,
+      "minInputs": 0,
+      "inputField": "first_frame_url",
+      "defaultInput": {
+        "audio": true,
+        "duration": 5,
+        "resolution": "480P",
+        "aspect_ratio": "adaptive"
+      },
+      "inputMimeTypes": [
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+        "video/mp4"
+      ],
+      "referenceSlots": [
+        {
+          "key": "images",
+          "label": "Images",
+          "field": "reference_image_urls",
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ],
+          "max": 10,
+          "encoding": "urls",
+          "maxBytes": 10485760,
+          "group": "references",
+          "minSide": 240,
+          "maxSide": 8000,
+          "minRatio": 0.125,
+          "maxRatio": 8
+        },
+        {
+          "key": "videos",
+          "label": "Videos",
+          "field": "reference_video_urls",
+          "mimeTypes": [
+            "video/mp4"
+          ],
+          "max": 5,
+          "encoding": "urls",
+          "maxBytes": 52428800,
+          "minDuration": 1,
+          "maxDuration": 15,
+          "totalDuration": 15,
+          "group": "references",
+          "minSide": 240,
+          "maxSide": 4096,
+          "minRatio": 0.125,
+          "maxRatio": 8
+        },
+        {
+          "key": "first",
+          "label": "First frame",
+          "field": "first_frame_url",
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ],
+          "max": 1,
+          "encoding": "url",
+          "maxBytes": 10485760,
+          "group": "frames"
+        },
+        {
+          "key": "last",
+          "label": "Last frame",
+          "field": "last_frame_url",
+          "mimeTypes": [
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+          ],
+          "max": 1,
+          "encoding": "url",
+          "maxBytes": 10485760,
+          "group": "frames"
+        }
+      ],
+      "allowNegativePrompt": false,
+      "maxCombinedDuration": 30
+    },
+    "credit_rules": {
+      "keys": [
+        "resolution"
+      ],
+      "rates": {
+        "480P": 7.14375012,
+        "720P": 16.07343776,
+        "1080P": 28.57500045
+      },
+      "strategy": "matrix",
+      "multiplierKey": "duration"
+    },
+    "is_active": true,
+    "sort_order": 130
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "folders": [
+    {
+      "name": "time-ai",
+      "path": "."
+    },
+    {
+      "name": "frontend",
+      "path": "frontend"
+    },
+    {
+      "name": "supabase",
+      "path": "supabase"
+    },
+    {
+      "name": "docs",
+      "path": "docs"
+    },
+    {
+      "name": "tool",
+      "path": "tool"
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/.DS_Store": true,
+      "**/node_modules": true,
+      "**/.wrangler": true,
+      "**/.vinext": true,
+      "**/build": true,
+      "**/.next": true,
+      "**/dist": true
+    },
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/pnpm-lock.yaml": true,
+      "**/.wrangler": true,
+      "**/.vinext": true,
+      "**/build": true,
+      "**/.next": true,
+      "**/dist": true
+    },
+    "files.watcherExclude": {
+      "**/node_modules/**": true,
+      "**/.wrangler/**": true,
+      "**/.vinext/**": true,
+      "**/build/**": true,
+      "**/.next/**": true,
+      "**/dist/**": true
+    },
+    "typescript.tsdk": "frontend/node_modules/typescript/lib",
+    "typescript.enablePromptUseWorkspaceTsdk": true,
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "[typescript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[typescriptreact]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[javascript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[json]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "esbenp.prettier-vscode",
+      "dbaeumer.vscode-eslint",
+      "bradlc.vscode-tailwindcss",
+      "denoland.vscode-deno",
+      "supabase.supabase-vscode"
+    ]
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": []
+  }
+}

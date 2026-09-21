@@ -1,0 +1,18 @@
+---
+description: Local Edge Functions workflow for frontend + backend live edit
+alwaysApply: true
+---
+
+# Local Studio functions
+
+When the user wants the frontend to use **local** Supabase functions:
+
+1. Ensure Docker Desktop is running.
+2. Terminal A: `./serve-functions.sh` (from repo root)
+3. Terminal B: `cd frontend && pnpm run dev:local-fn`
+
+This keeps Auth/DB on live project `xmxsqmxuiksldqhtugvv` and only runs function code locally.
+
+To go back to live functions: `cd frontend && pnpm run dev` (no `dev:local-fn`).
+
+Do not change `frontend/app/studio/supabase.ts` client URL for this mode — the Vite proxy (`STUDIO_FUNCTIONS_TARGET=local`) is the switch.

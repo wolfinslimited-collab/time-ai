@@ -1,0 +1,446 @@
+{
+  "verifiedOn": "2026-09-05",
+  "source": "https://kie.ai/pricing",
+  "targetMargin": 0.3,
+  "minimumUsdPerCredit": 0.007999,
+  "scope": "Active image and video generation only; excludes payment fees, infrastructure, support, tax, marketing, refunds and chat.",
+  "notes": [
+    "Wan 3.0 720p lists 16 provider credits but $0.09. Use the higher published dollar price conservatively.",
+    "Whole credits rounded upward once per request. Pack prices and balances unchanged.",
+    "Chat remains 1 credit per message with variable token cost; no 30% margin claim applies to chat."
+  ],
+  "packs": [
+    {
+      "key": "spark",
+      "credits": 1000,
+      "price_cents": 999,
+      "currency": "usd"
+    },
+    {
+      "key": "creator",
+      "credits": 3500,
+      "price_cents": 2999,
+      "currency": "usd"
+    },
+    {
+      "key": "production",
+      "credits": 10000,
+      "price_cents": 7999,
+      "currency": "usd"
+    }
+  ],
+  "models": {
+    "nano-banana-2-1k": {
+      "name": "Nano Banana 2",
+      "providerUsdRates": {
+        "1K": 0.04,
+        "2K": 0.06,
+        "4K": 0.09
+      },
+      "defaultParameters": {
+        "resolution": "1K",
+        "aspect_ratio": "auto",
+        "output_format": "png"
+      },
+      "durations": [
+        1
+      ],
+      "before": {
+        "credit_cost": 12,
+        "credit_rules": {
+          "keys": [
+            "resolution"
+          ],
+          "rates": {
+            "1K": 12,
+            "2K": 18,
+            "4K": 27
+          },
+          "strategy": "matrix"
+        }
+      },
+      "after": {
+        "credit_cost": 8,
+        "credit_rules": {
+          "keys": [
+            "resolution"
+          ],
+          "rates": {
+            "1K": 7.14375012,
+            "2K": 10.71562517,
+            "4K": 16.07343776
+          },
+          "strategy": "matrix"
+        }
+      }
+    },
+    "flux-2-flex-1k": {
+      "name": "FLUX.2 Flex",
+      "providerUsdRates": {
+        "1K": 0.07,
+        "2K": 0.12
+      },
+      "defaultParameters": {
+        "resolution": "1K",
+        "aspect_ratio": "1:1",
+        "nsfw_checker": true
+      },
+      "durations": [
+        1
+      ],
+      "before": {
+        "credit_cost": 20,
+        "credit_rules": {
+          "keys": [
+            "resolution"
+          ],
+          "rates": {
+            "1K": 20,
+            "2K": 36
+          },
+          "strategy": "matrix"
+        }
+      },
+      "after": {
+        "credit_cost": 13,
+        "credit_rules": {
+          "keys": [
+            "resolution"
+          ],
+          "rates": {
+            "1K": 12.5015627,
+            "2K": 21.43125034
+          },
+          "strategy": "matrix"
+        }
+      }
+    },
+    "gpt-image-2": {
+      "name": "GPT Image 2",
+      "providerUsdRates": {
+        "1K": 0.03,
+        "2K": 0.05,
+        "4K": 0.08
+      },
+      "defaultParameters": {
+        "resolution": "1K",
+        "aspect_ratio": "16:9"
+      },
+      "durations": [
+        1
+      ],
+      "before": {
+        "credit_cost": 9,
+        "credit_rules": {
+          "keys": [
+            "resolution"
+          ],
+          "rates": {
+            "1K": 9,
+            "2K": 15,
+            "4K": 24
+          },
+          "strategy": "matrix"
+        }
+      },
+      "after": {
+        "credit_cost": 6,
+        "credit_rules": {
+          "keys": [
+            "resolution"
+          ],
+          "rates": {
+            "1K": 5.35781259,
+            "2K": 8.92968764,
+            "4K": 14.28750023
+          },
+          "strategy": "matrix"
+        }
+      }
+    },
+    "gpt-image-1-5": {
+      "name": "GPT Image 1.5",
+      "providerUsdRates": {
+        "medium": 0.02,
+        "high": 0.11
+      },
+      "defaultParameters": {
+        "quality": "medium",
+        "aspect_ratio": "1:1"
+      },
+      "durations": [
+        1
+      ],
+      "before": {
+        "credit_cost": 6,
+        "credit_rules": {
+          "keys": [
+            "quality"
+          ],
+          "rates": {
+            "high": 33,
+            "medium": 6
+          },
+          "strategy": "matrix"
+        }
+      },
+      "after": {
+        "credit_cost": 4,
+        "credit_rules": {
+          "keys": [
+            "quality"
+          ],
+          "rates": {
+            "medium": 3.57187506,
+            "high": 19.64531281
+          },
+          "strategy": "matrix"
+        }
+      }
+    },
+    "seedream-5-lite": {
+      "name": "Seedream 5.0 Lite",
+      "providerUsdRates": {
+        "fixed": 0.0275
+      },
+      "defaultParameters": {
+        "quality": "basic",
+        "aspect_ratio": "1:1",
+        "nsfw_checker": true,
+        "output_format": "png"
+      },
+      "durations": [
+        1
+      ],
+      "before": {
+        "credit_cost": 9,
+        "credit_rules": {
+          "strategy": "fixed"
+        }
+      },
+      "after": {
+        "credit_cost": 5,
+        "credit_rules": {
+          "strategy": "fixed"
+        }
+      }
+    },
+    "seedream-5-pro": {
+      "name": "Seedream 5.0 Pro",
+      "providerUsdRates": {
+        "basic": 0.035,
+        "high": 0.07
+      },
+      "defaultParameters": {
+        "quality": "basic",
+        "aspect_ratio": "1:1",
+        "nsfw_checker": true,
+        "output_format": "png"
+      },
+      "durations": [
+        1
+      ],
+      "before": {
+        "credit_cost": 11,
+        "credit_rules": {
+          "keys": [
+            "quality"
+          ],
+          "rates": {
+            "high": 21,
+            "basic": 11
+          },
+          "strategy": "matrix"
+        }
+      },
+      "after": {
+        "credit_cost": 7,
+        "credit_rules": {
+          "keys": [
+            "quality"
+          ],
+          "rates": {
+            "basic": 6.25078135,
+            "high": 12.5015627
+          },
+          "strategy": "matrix"
+        }
+      }
+    },
+    "seedance-1-5-pro-720p-8s": {
+      "name": "Seedance 1.5 Pro",
+      "providerUsdRates": {
+        "480p|false": 0.00875,
+        "480p|true": 0.0175,
+        "720p|false": 0.0175,
+        "720p|true": 0.035,
+        "1080p|false": 0.0375,
+        "1080p|true": 0.075
+      },
+      "defaultParameters": {
+        "duration": 8,
+        "fixed_lens": false,
+        "resolution": "720p",
+        "aspect_ratio": "16:9",
+        "nsfw_checker": true,
+        "generate_audio": false
+      },
+      "durations": [
+        4,
+        8,
+        12
+      ],
+      "before": {
+        "credit_cost": 42,
+        "credit_rules": {
+          "keys": [
+            "resolution",
+            "generate_audio"
+          ],
+          "rates": {
+            "480p|true": 5.25,
+            "720p|true": 10.5,
+            "1080p|true": 22.5,
+            "480p|false": 2.625,
+            "720p|false": 5.25,
+            "1080p|false": 11.25
+          },
+          "strategy": "matrix",
+          "multiplierKey": "duration"
+        }
+      },
+      "after": {
+        "credit_cost": 26,
+        "credit_rules": {
+          "keys": [
+            "resolution",
+            "generate_audio"
+          ],
+          "rates": {
+            "480p|false": 1.56269534,
+            "480p|true": 3.12539068,
+            "720p|false": 3.12539068,
+            "720p|true": 6.25078135,
+            "1080p|false": 6.69726573,
+            "1080p|true": 13.39453146
+          },
+          "strategy": "matrix",
+          "multiplierKey": "duration"
+        }
+      }
+    },
+    "kling-3-video": {
+      "name": "Kling 3.0",
+      "providerUsdRates": {
+        "std|false": 0.07,
+        "std|true": 0.1,
+        "pro|false": 0.09,
+        "pro|true": 0.135,
+        "4K|false": 0.335,
+        "4K|true": 0.335
+      },
+      "defaultParameters": {
+        "mode": "std",
+        "sound": false,
+        "duration": "5",
+        "multi_shots": false,
+        "aspect_ratio": "16:9"
+      },
+      "durations": [
+        "3",
+        "5",
+        "8",
+        "10",
+        "15"
+      ],
+      "before": {
+        "credit_cost": 105,
+        "credit_rules": {
+          "keys": [
+            "mode",
+            "sound"
+          ],
+          "rates": {
+            "4K|true": 100.5,
+            "4K|false": 100.5,
+            "pro|true": 40.5,
+            "std|true": 30,
+            "pro|false": 27,
+            "std|false": 21
+          },
+          "strategy": "matrix",
+          "multiplierKey": "duration"
+        }
+      },
+      "after": {
+        "credit_cost": 63,
+        "credit_rules": {
+          "keys": [
+            "mode",
+            "sound"
+          ],
+          "rates": {
+            "std|false": 12.5015627,
+            "std|true": 17.85937528,
+            "pro|false": 16.07343776,
+            "pro|true": 24.11015663,
+            "4K|false": 59.82890719,
+            "4K|true": 59.82890719
+          },
+          "strategy": "matrix",
+          "multiplierKey": "duration"
+        }
+      }
+    },
+    "wan-3-video": {
+      "name": "Wan 3.0",
+      "providerUsdRates": {
+        "480P": 0.04,
+        "720P": 0.09,
+        "1080P": 0.16
+      },
+      "defaultParameters": {
+        "audio": true,
+        "duration": 5,
+        "resolution": "480P",
+        "aspect_ratio": "adaptive"
+      },
+      "durations": [
+        5,
+        10,
+        15,
+        30
+      ],
+      "before": {
+        "credit_cost": 60,
+        "credit_rules": {
+          "keys": [
+            "resolution"
+          ],
+          "rates": {
+            "480P": 12,
+            "720P": 24,
+            "1080P": 48
+          },
+          "strategy": "matrix",
+          "multiplierKey": "duration"
+        }
+      },
+      "after": {
+        "credit_cost": 36,
+        "credit_rules": {
+          "keys": [
+            "resolution"
+          ],
+          "rates": {
+            "480P": 7.14375012,
+            "720P": 16.07343776,
+            "1080P": 28.57500045
+          },
+          "strategy": "matrix",
+          "multiplierKey": "duration"
+        }
+      }
+    }
+  }
+}
