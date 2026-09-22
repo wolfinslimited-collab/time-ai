@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Brand } from "../../components/brand";
 
 const APP_STORE_URL = "https://apps.apple.com/app/id6740804440";
 const GOOGLE_PLAY_URL = "https://play.google.com/store/apps/details?id=com.wolfine.app";
@@ -16,17 +17,7 @@ export default function DownloadPage() {
         className="mx-auto flex min-h-20 w-full max-w-6xl items-center justify-between gap-6 border-b border-white/10 px-4 sm:min-h-24 sm:px-6"
         aria-label="Download navigation"
       >
-        <Link
-          className="inline-flex items-center gap-3 text-sm font-extrabold tracking-widest"
-          href="/"
-          aria-label="Timeless: Short Dramas home"
-        >
-          <img className="size-10 rounded-xl" src="/timeless-icon.png" alt="" />
-          <span className="grid gap-0.5">
-            TIMELESS
-            <small className="font-mono text-xs tracking-widest text-rose-400">SHORT DRAMAS</small>
-          </span>
-        </Link>
+        <Brand />
         <Link className="inline-flex items-center gap-2.5 text-xs font-bold text-white/70 hover:text-white" href="/">
           <span aria-hidden="true">←</span>
           <span className="hidden sm:inline">Back to stories</span>

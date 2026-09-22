@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Brand } from "../../components/brand";
 
 export const metadata: Metadata = {
   title: "Refund Policy — Timeless",
@@ -85,13 +86,7 @@ export default function RefundPage() {
   return (
     <main className="legal-page min-h-screen bg-neutral-950 text-stone-100">
       <nav className="legal-nav shell flex h-24 items-center justify-between border-b border-white/20 max-md:h-20" aria-label="Refund policy navigation">
-        <Link className="brand inline-flex items-center gap-3 text-sm font-bold leading-none tracking-widest" href="/" aria-label="Timeless home">
-          <img className="brand-mark block size-8 rounded-lg object-cover" src="/timeless-icon.png" alt="" />
-          <span>
-            TIMELESS
-            <small className="mt-1.5 block text-xs font-medium tracking-widest text-neutral-500">AI STUDIO</small>
-          </span>
-        </Link>
+        <Brand size="xs" subtitle="AI STUDIO" />
         <Link className="legal-back border-b border-neutral-600 py-2.5 text-sm font-semibold uppercase tracking-widest text-neutral-400 hover:text-lime-300" href="/pricing">
           <span className="max-md:hidden">View pricing  </span><span className="text-lime-300" aria-hidden="true">↗</span>
         </Link>

@@ -2,17 +2,13 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ArrowUpRight, Check, ShieldCheck, Zap, ArrowRight } from "lucide-react";
-import { studioSupabase } from "../studio/supabase";
-import { studioCatalogPricing } from "../studio/catalog-pricing";
-import { calculateStudioCredits } from "../studio/pricing";
+import { Brand } from "../../components/brand";
+import { studioSupabase } from "../../lib/studio/supabase";
+import { studioCatalogPricing } from "../../lib/studio/catalog-pricing";
+import { calculateStudioCredits, type StudioCreditRules } from "../../lib/studio/pricing";
+import { packArtSrc, placeholderCreditPacks, type CreditPack } from "../../lib/studio/credit-packs";
 import { pricingModels } from "./model-data";
 import { trackMetaEvent } from "../../meta-pixel";
-
-const initialPacks = [
-  {key:"spark",name:"Spark",credits:1000,price_cents:999,currency:"usd",badge:"",description:"Find your next great idea."},
-  {key:"creator",name:"Creator",credits:3500,price_cents:2999,currency:"usd",badge:"Most popular",description:"Make creating a daily habit."},
-  {key:"production",name:"Production",credits:10000,price_cents:7999,currency:"usd",badge:"Best value",description:"Give every ambitious idea room."},
-];
 const brands = [
   {key:"higgsfield",name:"Higgsfield",logo:"higgsfield.png",href:"https://higgsfield.ai/pricing",entry:"$15 / month",detail:"Starter · 200 monthly credits",terms:"Plus: $49 monthly / 1,000 credits. Ultra: $129 / 3,000. Annual plans and limited-time unlimited offers can reduce effective costs.",scope:"Image, video & audio"},
   {key:"openart",name:"OpenArt",logo:"openart.ico",href:"https://openart.ai/pricing",entry:"$14 / month",detail:"Starter · 4,000 monthly credits",terms:"Starter is $13 per month equivalent with annual billing. Per-model usage varies; the public plan page gives broad output estimates.",scope:"Image, video & audio"},
@@ -30,8 +26,8 @@ function higgsfieldReference(key:string,variant:string) {
   if(key==="seedance-1-5-pro-720p-8s") return {credits:variant.startsWith("1080p")?7:variant.startsWith("720p")?3:1,unit:"5s video",note:"Listed as Seedance 1.5; audio setting not specified. Timeless durations differ."};
   return null;
 }
-export default function PricingExperience({ variant: landingVariant = "default" }: { variant?: "default" | "higgsfield" }) {
-  const [packs,setPacks]=useState(initialPacks);
+export default function PricingExperience() {
+  const [packs,setPacks]=useState<CreditPack[]>(placeholderCreditPacks);
   const [prices,setPrices]=useState(studioCatalogPricing);
   const [packKey,setPackKey]=useState("production");
   const [modelKey,setModelKey]=useState(pricingModels[0].key);
@@ -41,22 +37,28 @@ export default function PricingExperience({ variant: landingVariant = "default" 
   const [quantity,setQuantity]=useState(100);
   useEffect(()=>{
     let live=true;
-    void studioSupabase.from("studio_credit_packs").select("key,name,credits,price_cents,currency,badge,description").eq("is_active",true).order("sort_order").then(({data})=>{if(live && data?.length)setPacks(data);});
-    void studioSupabase.auth.getSession().then(async ({data:{session}})=>{
-      if(!session)return;
-      const {data}=await studioSupabase.from("studio_models").select("key,credit_cost,credit_rules").eq("is_active",true);
-      if(live && data?.length)setPrices(Object.fromEntries(data.map(m=>[m.key,{credit_cost:m.credit_cost,credit_rules:m.credit_rules}])));
+    void studioSupabase.functions.invoke("studio-catalog",{body:{}}).then(({data,error})=>{
+      if(!live||error||!data)return;
+      const livePacks=Array.isArray(data.packs)?data.packs as CreditPack[]:[];
+      const models=Array.isArray(data.models)?data.models:[];
+      if(livePacks.length){
+        setPacks(livePacks);
+        setPackKey((current)=>livePacks.some((pack)=>pack.key===current)?current:livePacks[0].key);
+      }
+      if(models.length){
+        setPrices(Object.fromEntries(models.map((m:{key:string;credit_cost:number;credit_rules:StudioCreditRules})=>[m.key,{credit_cost:m.credit_cost,credit_rules:m.credit_rules}])));
+      }
     });
     return ()=>{live=false;};
   },[]);
   useEffect(() => {
     trackMetaEvent("ViewContent", {
       content_category: "Studio credits",
-      content_name: landingVariant === "higgsfield" ? "Higgsfield comparison pricing" : "Studio pricing",
+      content_name: "Studio pricing",
       content_type: "product_group",
       currency: "USD",
     });
-  }, [landingVariant]);
+  }, []);
   const pack=packs.find(p=>p.key===packKey)||packs[0];
   const model=pricingModels.find(m=>m.key===modelKey)||pricingModels[0];
   const price=prices[model.key]||studioCatalogPricing[model.key];
@@ -75,20 +77,20 @@ export default function PricingExperience({ variant: landingVariant = "default" 
   const buy=(key:string)=>`/studio?buy=${encodeURIComponent(key)}`;
   return <main className="credit-page min-h-screen font-sans text-stone-100">
     <nav className="credit-nav credit-shell flex h-24 items-center justify-between border-b border-white/10 max-md:h-20" aria-label="Pricing navigation">
-      <Link className="brand inline-flex items-center gap-3 text-lg tracking-widest max-md:text-sm" href="/studio"><img className="brand-mark size-9 rounded-lg" src="/timeless-icon.png" alt=""/><span>TIMELESS<small className="mt-1.5 block text-xs tracking-widest text-neutral-400">STUDIO</small></span></Link>
+      <Brand className="max-md:text-sm" href="/studio" size="sm" subtitle="STUDIO" />
       <div className="flex items-center gap-7 text-sm"><a href="#compare">Compare models</a><a href="#packs">Credit packs</a><Link className="credit-nav-back inline-flex items-center gap-2.5 rounded-full border border-white/10 px-4 py-2.5 max-md:px-3 max-md:py-2 max-md:text-xs" href="/studio">Back to Studio <ArrowUpRight size={16}/></Link></div>
     </nav>
-    <header className={`credit-hero credit-shell text-center py-20 pb-11 max-md:pt-12 max-md:pb-8 ${landingVariant === "higgsfield" ? "credit-hero-conquest" : ""}`}>
-      <p className="credit-eyebrow font-mono text-xs font-normal tracking-widest text-rose-300"><span/> {landingVariant === "higgsfield" ? "SELECT MODELS COST UP TO 50% LESS" : "CREATIVE FREEDOM. ONE BALANCE."}</p>
-      <h1 className="my-6 text-6xl font-normal leading-tight tracking-tight max-md:text-6xl lg:text-7xl xl:text-8xl">{landingVariant === "higgsfield" ? <>Keep the model.<br/><em>Lose the monthly lock-in.</em></> : <>More making.<br/><em>Less monthly.</em></>}</h1>
-      <p className="text-lg leading-relaxed text-neutral-400 max-md:text-base">{landingVariant === "higgsfield" ? <>Compare selected AI model costs with Higgsfield, then buy only the credits you need.<br className="credit-desktop"/> No subscription. No monthly reset. Your exact generation price is shown before you create.</> : <>Your next campaign, film, or wild idea starts here.<br className="credit-desktop"/> Powerful AI models. Small, transparent prices. No subscription required.</>}</p>
+    <header className="credit-hero credit-shell text-center py-20 pb-11 max-md:pt-12 max-md:pb-8">
+      <p className="credit-eyebrow font-mono text-xs font-normal tracking-widest text-rose-300"><span/> CREATIVE FREEDOM. ONE BALANCE.</p>
+      <h1 className="my-6 text-6xl font-normal leading-tight tracking-tight max-md:text-6xl lg:text-7xl xl:text-8xl">More making.<br/><em>Less monthly.</em></h1>
+      <p className="text-lg leading-relaxed text-neutral-400 max-md:text-base">Your next campaign, film, or wild idea starts here.<br className="credit-desktop"/> Powerful AI models. Small, transparent prices. No subscription required.</p>
       <div className="credit-hero-proof mt-7 flex flex-wrap justify-center gap-6.5 text-sm text-neutral-300 max-md:gap-3 max-md:text-xs"><span className="inline-flex items-center gap-1.5"><Check size={16}/> One-time payment</span><span className="inline-flex items-center gap-1.5"><Check size={16}/> No monthly reset</span><span className="inline-flex items-center gap-1.5"><Check size={16}/> Choose your model</span></div>
     </header>
     <section id="packs" className="credit-shell credit-packs grid grid-cols-1 gap-4.5 scroll-mt-8 sm:grid-cols-3 max-md:mx-auto max-md:max-w-md max-md:gap-5.5" aria-label="Buy credit packs">
       {packs.map((p,i)=><article className={`credit-pack ${p.key==="creator"?"credit-popular":""}`} key={p.key}>
         <div className="credit-pack-name"><h2>{p.name}</h2>{p.badge&&<span>{p.badge}</span>}</div>
-        <img className="credit-pack-art" src={`/pricing/${["spark","creator","production"].includes(p.key)?p.key:"spark"}.svg`} alt={`${p.name} abstract gradient vector artwork`} width="360" height="250"/>
-        <p className="credit-pack-tagline">{initialPacks.find(x=>x.key===p.key)?.description||p.description}</p>
+        <img className="credit-pack-art" src={packArtSrc(p.key)} alt={`${p.name} abstract gradient vector artwork`} width="360" height="250"/>
+        <p className="credit-pack-tagline">{p.description||placeholderCreditPacks.find(x=>x.key===p.key)?.description}</p>
         <div className="credit-pack-price">{money(p.price_cents/100)}<span>one time</span></div>
         <p className="credit-pack-balance"><strong>{p.credits.toLocaleString("en-US")}</strong> credits</p>
         <Link className={`credit-buy ${i===0?"credit-buy-quiet":""}`} href={buy(p.key)}>Choose {p.name}<ArrowUpRight size={18}/></Link>
@@ -113,7 +115,7 @@ export default function PricingExperience({ variant: landingVariant = "default" 
         </div>
         <div className="credit-result" aria-live="polite"><div><p>TIMELESS / {model.kind.toUpperCase()}</p><strong>{money(credits*usdPerCredit,3)}</strong><span>effective cost per {model.kind} · {credits} credits</span></div><div><p>WITH YOUR {pack.name.toUpperCase()} PACK</p><strong>{Math.floor(pack.credits/credits).toLocaleString("en-US")}</strong><span>{model.kind}s at these settings</span></div><Link href={buy(pack.key)} className="credit-buy">Get {pack.name}<ArrowRight size={18}/></Link></div>
         <div className="credit-usage"><label>Plan your usage <input type="number" min="1" max="10000" value={quantity} onChange={e=>setQuantity(Math.max(1,Math.min(10000,Math.floor(Number(e.target.value))||1)))}/> outputs</label><p><strong>{(credits*quantity).toLocaleString("en-US")} credits</strong> · {money(credits*quantity*usdPerCredit)} worth of your selected balance</p></div>
-        <p className="credit-fine">Effective cost allocates your pack price across its credits; outputs are not sold individually. Taxes excluded. Reference catalog updated September 5, 2026; signed-in pricing refreshes from Studio. The final generation quote is shown in Studio.</p>
+        <p className="credit-fine">Effective cost allocates your pack price across its credits; outputs are not sold individually. Taxes excluded. Reference catalog updated September 5, 2026; live pricing refreshes from Studio. The final generation quote is shown in Studio.</p>
       </div>
       <div className="credit-compare-top"><h3>Alongside other creative platforms</h3><label>Higgsfield reference plan<select value={hfPlan} onChange={e=>setHfPlan(e.target.value)}><option value="plus-monthly">Plus · $49 monthly</option><option value="ultra-monthly">Ultra · $129 monthly</option><option value="plus-annual">Plus · $39/mo billed annually</option><option value="ultra-annual">Ultra · $99/mo billed annually</option></select></label></div>
       <div className="credit-brand-grid">{brands.map(b=><article key={b.key}>
