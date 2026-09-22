@@ -2,9 +2,9 @@
 
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { ArrowUp, Headphones, LoaderCircle, RefreshCw, Ticket, X } from "lucide-react";
-import {supportTimeline,hasUnreadSupport,type SupportHistory} from "./support-history";
+import {supportTimeline,hasUnreadSupport,type SupportHistory} from "../../lib/studio/support-history";
 import { SupportAnswer, SupportSkeleton } from "./support-answer";
-import { studioSupabase, studioFetch } from "./supabase";
+import { studioSupabase, studioFetch } from "../../lib/studio/supabase";
 
 type Message = { role: "user" | "assistant"; content: string };
 const HANDOFF_KEY = "timeless.support.handoff";

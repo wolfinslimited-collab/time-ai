@@ -1,8 +1,8 @@
 "use client";
 import {useEffect,useRef,useState} from 'react';
 import {ArrowLeft,ArrowRight,LoaderCircle,Plus,X} from 'lucide-react';
-import {referenceError,type ReferenceAsset,type ReferenceConfig,type ReferenceSlot} from './references';
-import {mediaMetadata} from './media-metadata';
+import {referenceError,type ReferenceAsset,type ReferenceConfig,type ReferenceSlot} from '../../lib/studio/references';
+import {mediaMetadata} from '../../lib/studio/media-metadata';
 export type UploadedReference = ReferenceAsset & {name:string;preview:string};
 export const referenceMessage = (code:string) => ({
   duplicate_reference:'This file is already attached.',reference_required:'Add the required reference files first.',first_frame_required:'Add a first frame before using a last frame.',

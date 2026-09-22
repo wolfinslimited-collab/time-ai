@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFileSync } from 'node:fs';
-import { validParameterOptions, updateModelParameter } from '../app/(pages)/studio/video-settings.ts';
-import { calculateStudioCredits } from '../app/(pages)/studio/pricing.ts';
-const models=JSON.parse(readFileSync(new URL('../app/(pages)/studio/video-models.json',import.meta.url)));
+import { validParameterOptions, updateModelParameter } from '../app/lib/studio/video-settings.ts';
+import { calculateStudioCredits } from '../app/lib/studio/pricing.ts';
+const models=JSON.parse(readFileSync(new URL('../app/lib/studio/video-models.json',import.meta.url)));
 test('Hailuo prevents 1080p/10s and resets duration when quality changes',()=>{
  const model=models.find(m=>m.key==='hailuo-2-3-pro');
  assert.deepEqual(validParameterOptions('duration',['6','10'],{resolution:'1080P'},model.parameter_schema.forbiddenCombinations),['6']);
