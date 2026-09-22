@@ -4,9 +4,10 @@ import type { Session } from "@supabase/supabase-js";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LoaderCircle, LogOut, Menu, X } from "lucide-react";
-import { useEffect, useId, useRef, useState, type MouseEvent } from "react";
-import { AuthDialog, displayName } from "../(pages)/studio/auth-dialog";
-import { studioSupabase } from "../(pages)/studio/supabase";
+import { useEffect, useId, useRef, useState, type MouseEvent, type ReactNode } from "react";
+import { AuthDialog, displayName } from "./studio/auth-dialog";
+import { Brand } from "./brand";
+import { studioSupabase } from "../lib/studio/supabase";
 
 const links = [
   { href: "/#series", label: "Series" },
@@ -22,8 +23,20 @@ function isStudioHref(href: string) {
   return href === "/studio" || href.startsWith("/studio?");
 }
 
-export function Header() {
+export function Header({
+  variant = "marketing",
+  center,
+  afterBrand,
+  end,
+}: {
+  variant?: "marketing" | "studio";
+  center?: ReactNode;
+  afterBrand?: ReactNode;
+  end?: ReactNode;
+} = {}) {
   const router = useRouter();
+  const isStudio = variant === "studio";
+  const ownsAuth = !end;
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
@@ -59,6 +72,7 @@ export function Header() {
   }, [open]);
 
   useEffect(() => {
+    if (!ownsAuth) return;
     let active = true;
     void studioSupabase.auth.getSession().then(({ data }) => {
       if (!active) return;
@@ -74,7 +88,7 @@ export function Header() {
       active = false;
       data.subscription.unsubscribe();
     };
-  }, []);
+  }, [ownsAuth]);
 
   useEffect(() => {
     if (!user || !pendingStudioHref) return;
@@ -127,51 +141,59 @@ export function Header() {
 
   return (
     <header
-      className={`sticky top-0 z-40 w-full transition-[background-color,backdrop-filter,border-color] duration-200 ${
+      className={`sticky top-0 z-50 w-full transition-[background-color,backdrop-filter,border-color] duration-200 ${
         frosted
           ? "bg-neutral-950/70 backdrop-blur-xl backdrop-saturate-150 supports-[backdrop-filter]:bg-neutral-950/55"
           : "bg-transparent"
       }`}
     >
-      <div className="grid w-full min-h-16 grid-cols-[1fr_auto] items-center gap-x-4 px-4 sm:min-h-20 sm:gap-x-6 sm:px-6 lg:grid-cols-[1fr_auto_1fr] lg:gap-x-8 lg:px-12">
-        <Link
-          className="flex items-center gap-3 justify-self-start text-sm font-extrabold tracking-widest text-neutral-50"
-          href="/"
-          aria-label="Timeless: Short Dramas home"
-          onClick={close}
-        >
-          <img className="size-10 rounded-xl" src="/timeless-icon.png" alt="" width={40} height={40} />
-          <span className="grid gap-0.5">
-            TIMELESS
-            <small className="font-mono text-xs tracking-widest text-rose-400">SHORT DRAMAS</small>
-          </span>
-        </Link>
+      <div
+        className={`grid w-full min-h-16 items-center gap-x-4 px-4 sm:gap-x-6 sm:px-6 lg:gap-x-8 lg:px-12 ${
+          isStudio || afterBrand
+            ? "grid-cols-[minmax(0,1fr)_auto]"
+            : "grid-cols-[1fr_auto] lg:grid-cols-[1fr_auto_1fr]"
+        }`}
+      >
+        <div className="flex min-w-0 items-center gap-5 justify-self-start sm:gap-8">
+          <Brand
+            subtitle={isStudio ? "STUDIO" : "SHORT DRAMAS"}
+            onClick={close}
+          />
+          {afterBrand ? <div className="hidden min-w-0 md:block">{afterBrand}</div> : null}
+        </div>
 
-        <nav className="hidden grid-flow-col items-center justify-center gap-4 lg:grid xl:gap-5" aria-label="Primary">
-          {links.map((link) =>
-            link.href.startsWith("#") || link.href.startsWith("/#") ? (
-              <a
-                key={link.href}
-                className="text-sm font-medium capitalize text-neutral-50 transition-colors duration-150 hover:text-neutral-50/50"
-                href={link.href}
-              >
-                {link.label}
-              </a>
-            ) : (
-              <Link
-                key={link.href}
-                className="text-sm font-medium capitalize text-neutral-50 transition-colors duration-150 hover:text-neutral-50/50"
-                href={link.href}
-                onClick={isStudioHref(link.href) ? (event) => handleStudioClick(event, link.href) : undefined}
-              >
-                {link.label}
-              </Link>
-            ),
-          )}
-        </nav>
+        {!afterBrand &&
+          (center ? (
+            <div className="hidden justify-self-center lg:block">{center}</div>
+          ) : (
+            <nav className="hidden grid-flow-col items-center justify-center gap-4 lg:grid xl:gap-5" aria-label="Primary">
+              {links.map((link) =>
+                link.href.startsWith("#") || link.href.startsWith("/#") ? (
+                  <a
+                    key={link.href}
+                    className="text-sm font-medium capitalize text-neutral-50 transition-colors duration-150 hover:text-neutral-50/50"
+                    href={link.href}
+                  >
+                    {link.label}
+                  </a>
+                ) : (
+                  <Link
+                    key={link.href}
+                    className="text-sm font-medium capitalize text-neutral-50 transition-colors duration-150 hover:text-neutral-50/50"
+                    href={link.href}
+                    onClick={isStudioHref(link.href) ? (event: MouseEvent<HTMLAnchorElement>) => handleStudioClick(event, link.href) : undefined}
+                  >
+                    {link.label}
+                  </Link>
+                ),
+              )}
+            </nav>
+          ))}
 
         <div className="grid grid-flow-col items-center justify-self-end gap-3">
-          {!authReady ? (
+          {end ? (
+            end
+          ) : !authReady ? (
             <span className="hidden size-10 items-center justify-center text-neutral-50/70 lg:inline-flex" aria-hidden="true">
               <LoaderCircle className="animate-spin" size={16} />
             </span>
@@ -213,28 +235,35 @@ export function Header() {
               )}
             </div>
           ) : (
-            <button
-              className="hidden items-center justify-center rounded-full bg-neutral-50 px-3.5 py-1.5 font-sans text-sm font-medium text-neutral-950 transition-colors duration-150 hover:bg-white lg:inline-flex"
-              type="button"
-              onClick={() => openAuth()}
+            <Link
+              className="hidden items-center justify-center rounded-full bg-neutral-50 px-5 py-2.5 font-sans text-sm font-medium text-neutral-950 transition-colors duration-150 hover:bg-white lg:inline-flex"
+              href="/studio"
             >
-              Sign in
+              Start for free
+            </Link>
+          )}
+          {!isStudio && (
+            <button
+              className="inline-flex size-10 items-center justify-center rounded-xl border border-white/15 bg-white/5 p-0 text-neutral-50 transition-colors duration-150 hover:bg-white/10 lg:hidden sm:size-11"
+              type="button"
+              aria-expanded={open}
+              aria-controls={menuId}
+              aria-label={open ? "Close menu" : "Open menu"}
+              onClick={() => setOpen((value) => !value)}
+            >
+              {open ? <X size={20} strokeWidth={1.75} /> : <Menu size={20} strokeWidth={1.75} />}
             </button>
           )}
-          <button
-            className="inline-flex size-10 items-center justify-center rounded-xl border border-white/15 bg-white/5 p-0 text-neutral-50 transition-colors duration-150 hover:bg-white/10 lg:hidden sm:size-11"
-            type="button"
-            aria-expanded={open}
-            aria-controls={menuId}
-            aria-label={open ? "Close menu" : "Open menu"}
-            onClick={() => setOpen((value) => !value)}
-          >
-            {open ? <X size={20} strokeWidth={1.75} /> : <Menu size={20} strokeWidth={1.75} />}
-          </button>
         </div>
       </div>
 
-      {open && (
+      {afterBrand ? (
+        <div className="border-t border-white/10 px-4 py-2 md:hidden sm:px-6">{afterBrand}</div>
+      ) : (
+        center && <div className="border-t border-white/10 px-4 py-2 lg:hidden sm:px-6">{center}</div>
+      )}
+
+      {!isStudio && open && (
         <div className="bg-neutral-950/95 lg:hidden" id={menuId}>
           <nav className="grid grid-cols-2 gap-2.5 px-4 py-4 sm:px-6" aria-label="Mobile">
             {links.map((link) =>
@@ -252,7 +281,7 @@ export function Header() {
                   key={link.href}
                   className="grid min-h-13 place-items-center rounded-xl border border-white/10 bg-white/5 px-3.5 py-3 text-sm font-semibold capitalize text-white/80 transition-colors duration-150 hover:border-white/25 hover:bg-white/10 hover:text-white"
                   href={link.href}
-                  onClick={(event) => {
+                  onClick={(event: MouseEvent<HTMLAnchorElement>) => {
                     if (isStudioHref(link.href)) handleStudioClick(event, link.href);
                     else close();
                   }}
@@ -283,19 +312,19 @@ export function Header() {
                 </button>
               </>
             ) : (
-              <button
+              <Link
                 className="col-span-2 inline-flex min-h-13 w-full items-center justify-center rounded-full bg-neutral-50 px-3.5 py-3 font-sans text-sm font-medium text-neutral-950 transition-colors duration-150 hover:bg-white"
-                type="button"
-                onClick={() => openAuth("/studio")}
+                href="/studio"
+                onClick={close}
               >
-                Sign in
-              </button>
+                Start for free
+              </Link>
             )}
           </nav>
         </div>
       )}
 
-      {authOpen && (
+      {ownsAuth && authOpen && (
         <AuthDialog
           onClose={() => setAuthOpen(false)}
           onCancel={() => {
@@ -306,10 +335,10 @@ export function Header() {
         />
       )}
 
-      {notice && (
-        <div className="studio-toast" role="status">
+      {ownsAuth && notice && (
+        <div className="fixed top-20 right-5 z-50 flex max-w-sm items-center gap-4 rounded-xl border border-white/10 bg-elevated px-3.5 py-3 text-sm text-foreground shadow-2xl" role="status">
           <span>{notice}</span>
-          <button type="button" aria-label="Dismiss notification" onClick={() => setNotice(null)}>
+          <button className="grid size-6 place-items-center rounded-md bg-white/10" type="button" aria-label="Dismiss notification" onClick={() => setNotice(null)}>
             <X size={15} />
           </button>
         </div>

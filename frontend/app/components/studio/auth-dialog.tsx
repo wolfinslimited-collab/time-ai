@@ -3,23 +3,30 @@
 import type { User } from "@supabase/supabase-js";
 import { LoaderCircle, Sparkles, X } from "lucide-react";
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { emailAuthErrorMessage, googleSignInUrl, socialAuthErrorMessage } from "./auth";
-import { studioSupabase } from "./supabase";
+import { emailAuthErrorMessage, googleSignInUrl, socialAuthErrorMessage } from "../../lib/studio/auth";
+import { studioSupabase } from "../../lib/studio/supabase";
 
 export function displayName(user: User | null) {
   return user ? String(user.user_metadata?.full_name || user.email || "Creator") : "";
 }
 
+const fieldClass =
+  "min-h-12 w-full rounded-xl border-0 bg-canvas px-3.5 text-sm text-foreground shadow-none outline-none placeholder:text-subtle focus:ring-1 focus:ring-elevated-hover";
+
+const errorClass = "m-0 rounded-xl bg-accent-deep/20 px-3 py-2.5 text-left text-sm text-accent-soft";
+
 export function AuthDialog({
   onClose,
   onCancel,
   onNotice,
+  initialMode = "signin",
 }: {
   onClose: () => void;
   onCancel?: () => void;
   onNotice: (notice: string) => void;
+  initialMode?: "signin" | "signup";
 }) {
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup">(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -85,25 +92,46 @@ export function AuthDialog({
 
   return (
     <div
-      className="studio-modal-backdrop"
+      className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-black/75 p-7 backdrop-blur-lg"
       role="presentation"
       onMouseDown={(event) => event.target === event.currentTarget && (onCancel || onClose)()}
     >
-      <section className="studio-modal studio-auth-modal" role="dialog" aria-modal="true" aria-labelledby="studio-auth-title">
-        <button className="studio-modal-close" onClick={onCancel || onClose} type="button" aria-label="Close">
+      <section
+        className="relative w-full max-w-sm rounded-2xl bg-elevated px-8 pb-7 pt-10 text-center shadow-none"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="studio-auth-title"
+      >
+        <button
+          className="absolute top-3.5 right-3.5 grid size-8 place-items-center rounded-lg bg-transparent text-muted transition-colors hover:bg-elevated-hover hover:text-foreground"
+          onClick={onCancel || onClose}
+          type="button"
+          aria-label="Close"
+        >
           <X size={18} />
         </button>
-        <span className="studio-modal-icon">
-          <Sparkles size={20} />
+        <span className="mx-auto mb-5 grid size-10 place-items-center rounded-xl bg-elevated-hover text-foreground">
+          <Sparkles size={18} />
         </span>
-        <p className="studio-modal-kicker">ONE TIMELESS ACCOUNT</p>
-        <h2 id="studio-auth-title">{mode === "signin" ? "Welcome back, creator." : "Create your studio."}</h2>
-        <p className="studio-modal-copy">Your projects, generations, conversations, and credits stay together across Timeless.</p>
-        <div className="studio-social-row">
-          <button type="button" disabled={busy || socialBusy} aria-busy={socialBusy} onClick={social}>
+        <h2 id="studio-auth-title" className="m-0 text-2xl font-semibold tracking-tight text-foreground">
+          Welcome to Timeless
+        </h2>
+        <p className="mx-auto mt-2.5 mb-7 max-w-xs text-sm leading-relaxed text-muted">
+          {mode === "signin"
+            ? "Log in or sign up to bring your ideas to life."
+            : "Join Timeless and keep your projects, generations, and credits in one place."}
+        </p>
+        <div className="grid gap-2.5">
+          <button
+            type="button"
+            disabled={busy || socialBusy}
+            aria-busy={socialBusy}
+            onClick={social}
+            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border-0 bg-elevated-hover px-4 text-sm font-medium text-foreground transition-colors hover:brightness-110 disabled:cursor-wait disabled:opacity-70"
+          >
             {socialBusy ? (
               <>
-                <LoaderCircle size={16} aria-hidden="true" /> Connecting to Google…
+                <LoaderCircle className="animate-spin" size={16} aria-hidden="true" /> Connecting to Google…
               </>
             ) : (
               "Continue with Google"
@@ -111,27 +139,43 @@ export function AuthDialog({
           </button>
         </div>
         {socialError && (
-          <p className="studio-auth-error" role="alert">
+          <p className={`${errorClass} mt-3`} role="alert">
             {socialError}
           </p>
         )}
-        <div className="studio-divider">
-          <span>or use email</span>
+        <div className="my-5 flex items-center gap-3 text-xs text-subtle">
+          <span className="h-px flex-1 bg-elevated-hover" aria-hidden="true" />
+          <span>or</span>
+          <span className="h-px flex-1 bg-elevated-hover" aria-hidden="true" />
         </div>
-        <form onSubmit={submit} aria-busy={busy}>
+        <form className="grid gap-3.5 text-left" onSubmit={submit} aria-busy={busy}>
           {mode === "signup" && (
-            <label>
+            <label className="grid gap-2 text-sm font-medium text-muted">
               Name
-              <input value={name} onChange={(event) => setName(event.target.value)} required autoComplete="name" />
+              <input
+                className={fieldClass}
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                required
+                autoComplete="name"
+              />
             </label>
           )}
-          <label>
+          <label className="grid gap-2 text-sm font-medium text-muted">
             Email
-            <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required autoComplete="email" />
+            <input
+              className={fieldClass}
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              required
+              autoComplete="email"
+            />
           </label>
-          <label>
+          <label className="grid gap-2 text-sm font-medium text-muted">
             Password
             <input
+              className={fieldClass}
               type="password"
               minLength={mode === "signup" ? 8 : undefined}
               value={password}
@@ -141,14 +185,19 @@ export function AuthDialog({
             />
           </label>
           {emailError && (
-            <p className="studio-auth-error" role="alert">
+            <p className={errorClass} role="alert">
               {emailError}
             </p>
           )}
-          <button className="studio-modal-primary" disabled={busy || socialBusy} type="submit">
+          <button
+            className="mt-1 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border-0 bg-accent px-4 text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent-soft disabled:cursor-wait disabled:bg-elevated-hover disabled:text-subtle"
+            disabled={busy || socialBusy}
+            type="submit"
+          >
             {busy ? (
               <>
-                <LoaderCircle size={16} aria-hidden="true" /> {mode === "signin" ? "Signing in…" : "Creating account…"}
+                <LoaderCircle className="animate-spin" size={16} aria-hidden="true" />{" "}
+                {mode === "signin" ? "Signing in…" : "Creating account…"}
               </>
             ) : mode === "signin" ? (
               "Sign in"
@@ -158,7 +207,7 @@ export function AuthDialog({
           </button>
         </form>
         <button
-          className="studio-auth-switch"
+          className="mt-5 bg-transparent text-sm text-muted transition-colors hover:text-foreground disabled:opacity-60"
           disabled={busy || socialBusy}
           type="button"
           onClick={() => {

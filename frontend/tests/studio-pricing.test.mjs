@@ -1,8 +1,15 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { readFileSync } from "node:fs";
-import { calculateStudioCredits } from "../app/(pages)/studio/pricing.ts";
-import { studioCatalogPricing } from "../app/(pages)/studio/catalog-pricing.ts";
+import { calculateStudioCredits } from "../app/lib/studio/pricing.ts";
+import { studioCatalogPricing } from "../app/lib/studio/catalog-pricing.ts";
+import {
+  centsToDollarsInput,
+  CREDIT_PACK_KEY_PATTERN,
+  dollarsToCents,
+  packArtSrc,
+  placeholderCreditPacks,
+} from "../app/lib/studio/credit-packs.ts";
 
 const audit = JSON.parse(readFileSync(new URL("../maintenance/studio-pricing-30pct.json", import.meta.url)));
 
@@ -38,4 +45,21 @@ for (const [key, model] of Object.entries(audit.models)) {
 test("video quotes round once after duration multiplication", () => {
   const price = studioCatalogPricing["seedance-1-5-pro-720p-8s"];
   assert.equal(calculateStudioCredits(price.credit_cost, {resolution: "480p", generate_audio: false, duration: 12}, price.credit_rules), 19);
+});
+
+test("credit pack helpers validate keys and convert prices", () => {
+  assert.ok(CREDIT_PACK_KEY_PATTERN.test("spark"));
+  assert.ok(CREDIT_PACK_KEY_PATTERN.test("pro_pack-2"));
+  assert.equal(CREDIT_PACK_KEY_PATTERN.test("Spark"), false);
+  assert.equal(CREDIT_PACK_KEY_PATTERN.test("a"), false);
+  assert.equal(dollarsToCents("9.99"), 999);
+  assert.equal(dollarsToCents(29.99), 2999);
+  assert.equal(centsToDollarsInput(7999), "79.99");
+  assert.equal(packArtSrc("creator"), "/pricing/creator.svg");
+  assert.equal(packArtSrc("custom-pack"), "/pricing/spark.svg");
+  assert.equal(placeholderCreditPacks.length, 3);
+  assert.deepEqual(
+    placeholderCreditPacks.map((pack) => pack.key),
+    ["spark", "creator", "production"],
+  );
 });

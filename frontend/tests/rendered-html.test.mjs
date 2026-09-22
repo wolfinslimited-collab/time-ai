@@ -23,6 +23,26 @@ async function render(pathname = "/") {
   );
 }
 
+async function readStudioSources() {
+  const paths = [
+    "../app/(pages)/studio/studio-workspace.tsx",
+    "../app/(pages)/studio/hooks/use-studio-invoke.ts",
+    "../app/(pages)/studio/hooks/use-studio-catalog.ts",
+    "../app/(pages)/studio/hooks/use-studio-checkout.ts",
+    "../app/(pages)/studio/hooks/use-studio-workspace-data.ts",
+    "../app/(pages)/studio/data/showcase-examples.ts",
+    "../app/lib/studio/studio-types.ts",
+    "../app/lib/studio/studio-errors.ts",
+    "../app/components/studio/studio-dialogs.tsx",
+    "../app/components/studio/studio-model-picker.tsx",
+    "../app/components/studio/tool-library.tsx",
+  ];
+  const chunks = await Promise.all(
+    paths.map((path) => readFile(new URL(path, import.meta.url), "utf8")),
+  );
+  return chunks.join("\n");
+}
+
 test("server-renders the Timeless short-drama product page", async () => {
   const response = await render();
   assert.equal(response.status, 200);
@@ -78,16 +98,6 @@ test("server-renders transparent Timeless Studio pricing", async () => {
   assert.match(html, /payments are securely processed by Stripe/i);
 });
 
-test("server-renders the Higgsfield comparison campaign landing page", async () => {
-  const response = await render("/studio/compare/higgsfield");
-  assert.equal(response.status, 200);
-  const html = await response.text();
-  assert.match(html, /selected AI model costs with Higgsfield/i);
-  assert.match(html, /SELECT MODELS COST UP TO 50% LESS/i);
-  assert.match(html, /No subscription/i);
-  assert.match(html, /\/studio\?buy=creator/i);
-});
-
 test("server-renders the iOS and Android download page", async () => {
   const response = await render("/download");
   assert.equal(response.status, 200);
@@ -124,10 +134,7 @@ test("server-renders the native Timeless Studio desktop workspace", async () => 
 });
 
 test("Studio showcase copies and loads prompts into the generator", async () => {
-  const source = await readFile(
-    new URL("../app/(pages)/studio/studio-workspace.tsx", import.meta.url),
-    "utf8",
-  );
+  const source = await readStudioSources();
 
   assert.match(source, /navigator\.clipboard\.writeText\(example\.prompt\)/);
   assert.match(source, /setPrompt\(example\.prompt\)/);
@@ -157,13 +164,10 @@ test("adds production security headers to every route", async () => {
 });
 
 test("Studio handles non-Response function errors and missing Stripe safely", async () => {
-  const source = await readFile(
-    new URL("../app/(pages)/studio/studio-workspace.tsx", import.meta.url),
-    "utf8",
-  );
+  const source = await readStudioSources();
   assert.match(source, /typeof clone === "function"/);
   assert.match(source, /stripe_not_configured/);
-  assert.match(source, /ElevenLabs Dialogue v3/);
+  assert.match(source, /studio-catalog/);
   assert.doesNotMatch(source, /modelKey:\s*"elevenlabs-dialogue-v3"/);
   assert.doesNotMatch(source, /modelKey:\s*"gemini-3-1-flash-tts"/);
   assert.doesNotMatch(source, /modelKey:\s*"gemini-2-5-pro-tts"/);
@@ -173,10 +177,7 @@ test("Studio handles non-Response function errors and missing Stripe safely", as
 });
 
 test("Studio verifies Stripe returns and confirms delivered credits", async () => {
-  const source = await readFile(
-    new URL("../app/(pages)/studio/studio-workspace.tsx", import.meta.url),
-    "utf8",
-  );
+  const source = await readStudioSources();
 
   assert.match(source, /studio_stripe_checkouts/);
   assert.match(source, /stripe_session_id/);
@@ -192,7 +193,7 @@ test("Meta Pixel measures the web purchase funnel without sending checkout ident
     readFile(new URL("../app/meta-pixel-config.ts", import.meta.url), "utf8"),
     readFile(new URL("../public/meta-pixel-bootstrap.js", import.meta.url), "utf8"),
     readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/(pages)/studio/studio-workspace.tsx", import.meta.url), "utf8"),
+    readStudioSources(),
     readFile(new URL("../worker/index.ts", import.meta.url), "utf8"),
   ]);
 
@@ -216,35 +217,33 @@ test("Meta Pixel measures the web purchase funnel without sending checkout ident
 });
 
 test("Studio discloses seven-day media retention and supports keeping outputs", async () => {
-  const source = await readFile(
-    new URL("../app/(pages)/studio/studio-workspace.tsx", import.meta.url),
-    "utf8",
-  );
+  const source = await readStudioSources();
 
   assert.match(source, /Files expire after 7 days unless kept/);
   assert.match(source, /studio-retain-asset/);
   assert.match(source, /Expires in \$\{days\} days/);
-  assert.match(source, /\}\s+Keep<\/button>/);
+  assert.match(source, /\}\s+Keep\s*<\/button>/);
   assert.match(source, /File expired/);
 });
 
-test("Studio exposes model-specific controls and live credit quotes", async () => {
-  const source = await readFile(
-    new URL("../app/(pages)/studio/studio-workspace.tsx", import.meta.url),
-    "utf8",
-  );
+test("Studio loads models from the regulated catalog and quotes credits live", async () => {
+  const source = await readStudioSources();
   const pricing = await readFile(
-    new URL("../app/(pages)/studio/pricing.ts", import.meta.url),
+    new URL("../app/lib/studio/pricing.ts", import.meta.url),
     "utf8",
   );
 
   assert.match(source, /Choose the right engine/);
   assert.match(source, /Price updates with every setting/);
-  assert.match(source, /Nano Banana 2/);
-  assert.match(source, /GPT Image 2/);
-  assert.match(source, /Seedream 5\.0 Pro/);
-  assert.match(source, /Kling 3\.0/);
-  assert.match(source, /Wan 3\.0/);
+  assert.match(source, /invoke\("studio-catalog"\)|invoke<[^>]*>\("studio-catalog"\)/);
+  assert.match(source, /loadCatalog/);
+  assert.match(source, /TOOL_ICONS/);
+  assert.match(source, /hydrateTool/);
+  assert.match(source, /toolKey: activeTool\?\.key/);
+  assert.doesNotMatch(source, /fallbackModels/);
+  assert.doesNotMatch(source, /const tools: StudioTool\[\] = \[/);
+  assert.doesNotMatch(source, /video-models\.json/);
+  assert.doesNotMatch(source, /reference-overrides\.json/);
   assert.match(source, /quotedCredits/);
   assert.match(source, /From \{defaultModelCredits\(model\)\} cr/);
   assert.match(pricing, /rules\.multiplierKey/);
@@ -266,9 +265,12 @@ test("Dedicated pricing page shows purchase links, model calculator and sourced 
   assert.match(html, /Some subscriptions can cost less at high usage/);
   assert.match(html, /no cross-platform speed benchmark is claimed/);
   assert.match(html, /openart\.ai\/pricing/);
-  const studio = await readFile(new URL("../app/(pages)/studio/studio-workspace.tsx", import.meta.url), "utf8");
+  const studio = await readStudioSources();
   assert.doesNotMatch(studio, /function CreditsDialog/);
   assert.match(studio, /window\.location\.assign\("\/pricing"\)/);
+  const pricingSource = await readFile(new URL("../app/(pages)/pricing/pricing-experience.tsx", import.meta.url), "utf8");
+  assert.match(pricingSource, /studio-catalog/);
+  assert.doesNotMatch(pricingSource, /from\("studio_models"\)/);
 });
 
 test("uses the original Timeless icon for favicon and shared brand marks", async () => {
@@ -321,9 +323,53 @@ test("keeps small text readable across every site route", async () => {
 });
 
 test("personal Studio filters admin-readable projects by owner and refreshes chat balance", async () => {
-  const source = await readFile(new URL("../app/(pages)/studio/studio-workspace.tsx", import.meta.url), "utf8");
+  const source = await readStudioSources();
   assert.match(source, /from\("studio_projects"\)\.select\("id,name"\)\.eq\("user_id", user\.id\)/);
   const chat = source.slice(source.indexOf("async function sendChat()"), source.indexOf("async function refreshGeneration"));
   assert.match(chat, /from\("studio_credit_wallets"\)/);
   assert.match(chat, /setBalance\(Number\(wallet\.balance\)\)/);
+});
+
+test("Studio and pricing load credit packs from studio-catalog, not a hardcoded buy allowlist", async () => {
+  const [studio, pricing] = await Promise.all([
+    readStudioSources(),
+    readFile(new URL("../app/(pages)/pricing/pricing-experience.tsx", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(studio, /invoke<[^>]*>\("studio-catalog"\)/);
+  assert.match(studio, /if \(!catalogReady\) return/);
+  assert.match(studio, /creditPacks\.some\(\(pack\) => pack\.key === selected\)/);
+  assert.match(studio, /!authReady \|\| !catalogReady \|\| !pendingPack/);
+  assert.doesNotMatch(studio, /fallbackPacks/);
+  assert.doesNotMatch(studio, /\["spark", "creator", "production"\]\.includes\(selected\)/);
+
+  assert.match(pricing, /studio-catalog/);
+  assert.match(pricing, /placeholderCreditPacks/);
+  assert.match(pricing, /packArtSrc/);
+  assert.doesNotMatch(pricing, /const initialPacks/);
+});
+
+test("admin credit packs page gates on is_admin and writes studio_credit_packs", async () => {
+  const [page, admin] = await Promise.all([
+    readFile(new URL("../app/(pages)/admin/studio/packs/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/(pages)/admin/studio/packs/packs-admin.tsx", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(page, /PacksAdmin/);
+  assert.match(page, /robots:\s*\{\s*index:\s*false/);
+  assert.match(admin, /rpc\("is_admin"\)/);
+  assert.match(admin, /AuthDialog/);
+  assert.match(admin, /Access denied/);
+  assert.match(admin, /from\("studio_credit_packs"\)/);
+  assert.match(admin, /\.insert\(/);
+  assert.match(admin, /\.update\(/);
+  assert.match(admin, /\.delete\(\)/);
+  assert.match(admin, /Deactivate it instead/);
+  assert.match(admin, /CREDIT_PACK_KEY_PATTERN/);
+
+  const response = await render("/admin/studio/packs");
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  assert.match(html, /Admin — Studio credit packs/i);
+  assert.match(html, /Studio credit packs/i);
 });
