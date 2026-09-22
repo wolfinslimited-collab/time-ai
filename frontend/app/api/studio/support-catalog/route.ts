@@ -1,4 +1,4 @@
-import { modelCatalog } from "../../../studio/model-catalog";
+import { modelCatalog } from "../../../(pages)/studio/model-catalog";
 
 export function GET() {
   return Response.json({

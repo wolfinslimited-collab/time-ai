@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createClient } from "@supabase/supabase-js";
-import { clearAuthErrorUrl, googleSignInUrl, socialAuthErrorMessage } from "../app/studio/auth.ts";
+import { clearAuthErrorUrl, googleSignInUrl, socialAuthErrorMessage } from "../app/(pages)/studio/auth.ts";
 
 test("Google OAuth uses the SDK with the Studio callback and account selection", async () => {
   const client = createClient("https://example.supabase.co", "test-publishable-key", {
@@ -45,7 +45,7 @@ test("failed OAuth returns are cleaned without losing unrelated parameters", () 
 });
 
 test("email failures explain invalid credentials, verification, rate limits, and network errors", async () => {
-  const { emailAuthErrorMessage } = await import("../app/studio/auth.ts");
+  const { emailAuthErrorMessage } = await import("../app/(pages)/studio/auth.ts");
   assert.match(emailAuthErrorMessage({ code: "invalid_credentials" }), /email or password is incorrect/);
   assert.match(emailAuthErrorMessage({ code: "email_not_confirmed" }), /verify your email/);
   assert.match(emailAuthErrorMessage({ status: 429 }), /Too many attempts/);
@@ -55,10 +55,9 @@ test("email failures explain invalid credentials, verification, rate limits, and
 
 test("sign-in errors render inside the form and Apple stays removed", async () => {
   const { readFile } = await import("node:fs/promises");
-  const source = await readFile(new URL("../app/studio/studio-workspace.tsx", import.meta.url), "utf8");
-  const dialog = source.slice(source.indexOf("function AuthDialog("), source.indexOf("function CreditsDialog("));
-  assert.doesNotMatch(dialog, /Continue with Apple|social\("apple"\)/);
-  assert.match(dialog, /<form[^>]+onSubmit=\{submit\}[\s\S]*emailError && <p className="studio-auth-error" role="alert"/);
-  assert.match(dialog, /Signing in…/);
-  assert.match(dialog, /minLength=\{mode === "signup" \? 8 : undefined\}/);
+  const source = await readFile(new URL("../app/(pages)/studio/auth-dialog.tsx", import.meta.url), "utf8");
+  assert.doesNotMatch(source, /Continue with Apple|social\("apple"\)/);
+  assert.match(source, /<form[^>]+onSubmit=\{submit\}[\s\S]*emailError && \(\s*<p className="studio-auth-error" role="alert"/);
+  assert.match(source, /Signing in…/);
+  assert.match(source, /minLength=\{mode === "signup" \? 8 : undefined\}/);
 });

@@ -141,71 +141,71 @@ const sections = [
 
 export default function TermsPage() {
   return (
-    <main className="legal-page">
-      <nav className="legal-nav shell" aria-label="Terms navigation">
-        <Link className="brand" href="/" aria-label="Timeless home">
-          <img className="brand-mark" src="/timeless-icon.png" alt="" />
+    <main className="legal-page min-h-screen bg-neutral-950 text-stone-100">
+      <nav className="legal-nav shell flex h-24 items-center justify-between border-b border-white/20 max-md:h-20" aria-label="Terms navigation">
+        <Link className="brand inline-flex items-center gap-3 text-sm font-bold leading-none tracking-widest" href="/" aria-label="Timeless home">
+          <img className="brand-mark block size-8 rounded-lg object-cover" src="/timeless-icon.png" alt="" />
           <span>
             TIMELESS
-            <small>SHORT DRAMAS</small>
+            <small className="mt-1.5 block text-xs font-medium tracking-widest text-neutral-500">SHORT DRAMAS</small>
           </span>
         </Link>
-        <Link className="legal-back" href="/">
-          Back to Timeless <span aria-hidden="true">↗</span>
+        <Link className="legal-back border-b border-neutral-600 py-2.5 text-sm font-semibold uppercase tracking-widest text-neutral-400 hover:text-lime-300" href="/">
+          <span className="max-md:hidden">Back to Timeless  </span><span className="text-lime-300" aria-hidden="true">↗</span>
         </Link>
       </nav>
 
-      <header className="legal-hero shell">
-        <p className="kicker">LEGAL / TERMS</p>
-        <h1>Terms of Service</h1>
-        <p className="legal-intro">
+      <header className="legal-hero shell border-b border-white/20 py-24 pb-18 max-md:py-16 max-md:pb-13">
+        <p className="kicker m-0 font-mono text-sm font-semibold uppercase tracking-widest text-neutral-500">LEGAL / TERMS</p>
+        <h1 className="my-7 text-7xl md:text-8xl lg:text-9xl">Terms of Service</h1>
+        <p className="legal-intro m-0 max-w-3xl text-2xl leading-snug text-neutral-400 md:text-3xl">
           These Terms explain the rules for using Timeless Short Dramas,
           including accounts, subscriptions, and licensed video content.
         </p>
-        <div className="legal-meta">
+        <div className="legal-meta mt-10 flex flex-wrap gap-x-8 gap-y-4 font-mono text-sm uppercase tracking-widest text-neutral-500">
           <span>Effective 4 September 2026</span>
           <span>Timeless · com.wolfine.app</span>
         </div>
       </header>
 
-      <div className="legal-layout shell">
-        <aside className="legal-summary" aria-label="Terms summary">
-          <p className="kicker">AT A GLANCE</p>
-          <strong>Personal streaming access.</strong>
-          <p>Mobile billing is managed by Apple or Google.</p>
-          <p>Studio web payments are securely processed by Stripe.</p>
-          <p>Respect content rights and keep your account secure.</p>
+      <div className="legal-layout shell grid gap-14 py-22 pb-30 max-md:grid-cols-1 max-md:gap-14 max-md:py-14 max-md:pb-20 lg:gap-28">
+        <aside className="legal-summary sticky top-8 self-start bg-lime-300 p-7 text-neutral-950 max-md:static" aria-label="Terms summary">
+          <p className="kicker m-0 font-mono text-sm font-semibold uppercase tracking-widest text-neutral-950/60">AT A GLANCE</p>
+          <strong className="my-6 block text-3xl font-normal leading-tight">Personal streaming access.</strong>
+          <p className="mt-3 border-t border-neutral-950/20 pt-3 text-sm leading-snug">Mobile billing is managed by Apple or Google.</p>
+          <p className="mt-3 border-t border-neutral-950/20 pt-3 text-sm leading-snug">Studio web payments are securely processed by Stripe.</p>
+          <p className="mt-3 border-t border-neutral-950/20 pt-3 text-sm leading-snug">Respect content rights and keep your account secure.</p>
         </aside>
 
-        <article className="legal-content">
+        <article className="legal-content max-w-3xl">
           {sections.map((section) => (
-            <section key={section.title}>
-              <h2>{section.title}</h2>
+            <section key={section.title} className="mb-12 border-b border-white/20 pb-12 max-md:mb-9 max-md:pb-9">
+              <h2 className="mb-5 text-3xl font-normal leading-tight tracking-tight md:text-4xl">{section.title}</h2>
               {section.body}
             </section>
           ))}
 
-          <section className="legal-contact">
-            <p className="kicker">CONTACT</p>
-            <h2>Questions about these Terms</h2>
-            <p>
+          <section className="legal-contact mb-12 border-b-0 bg-stone-100 p-9 text-neutral-950 max-md:p-6">
+            <p className="kicker m-0 font-mono text-sm font-semibold uppercase tracking-widest text-neutral-500">CONTACT</p>
+            <h2 className="mt-4 mb-5 text-3xl font-normal leading-tight tracking-tight md:text-4xl">Questions about these Terms</h2>
+            <p className="mb-4 text-base leading-relaxed text-neutral-600">
               Email us at{" "}
-              <a href="mailto:info@timelessapp.ai">info@timelessapp.ai</a>.
+              <a className="font-bold text-lime-800 underline underline-offset-4" href="mailto:info@timelessapp.ai">info@timelessapp.ai</a>.
             </p>
           </section>
         </article>
       </div>
 
-      <footer className="legal-footer shell">
+      <footer className="legal-footer shell flex justify-between border-t border-white/20 py-7.5 pb-11 font-mono text-sm uppercase tracking-widest text-neutral-500 max-md:flex-col max-md:gap-4.5">
         <span>© 2026 Timeless</span>
         <div>
-          <a href="/pricing">Pricing</a>
+          <a className="hover:text-lime-300" href="/pricing">Pricing</a>
           <span aria-hidden="true"> · </span>
-          <a href="/refund">Refund Policy</a>
+          <a className="hover:text-lime-300" href="/refund">Refund Policy</a>
           <span aria-hidden="true"> · </span>
-          <a href="/privacy">Privacy Policy</a>
+          <a className="hover:text-lime-300" href="/privacy">Privacy Policy</a>
           <span aria-hidden="true"> · </span>
-          <a href="mailto:info@timelessapp.ai">info@timelessapp.ai</a>
+          <a className="hover:text-lime-300" href="mailto:info@timelessapp.ai">info@timelessapp.ai</a>
         </div>
       </footer>
     </main>

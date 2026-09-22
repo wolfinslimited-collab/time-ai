@@ -34,9 +34,10 @@ test("server-renders the Timeless short-drama product page", async () => {
   assert.match(html, /The Frozen Mind/i);
   assert.match(html, /Get it on Google Play/i);
   assert.match(html, /Download for iPhone/i);
-  assert.match(html, /frozen-mind-01\.jpg/i);
   assert.match(html, /frozen-mind-02\.jpg/i);
-  assert.match(html, /frozen-mind-03\.jpg/i);
+  assert.match(html, /series\/dqn\.png/i);
+  assert.match(html, /series\/kusanscar\.png/i);
+  assert.match(html, /series\/frozen-mind\.jpg/i);
   assert.doesNotMatch(html, /TIMELESS VIP|One subscription|\$79\.99/i);
   assert.doesNotMatch(html, /AI Academy|Learn AI/i);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape/i);
@@ -124,7 +125,7 @@ test("server-renders the native Timeless Studio desktop workspace", async () => 
 
 test("Studio showcase copies and loads prompts into the generator", async () => {
   const source = await readFile(
-    new URL("../app/studio/studio-workspace.tsx", import.meta.url),
+    new URL("../app/(pages)/studio/studio-workspace.tsx", import.meta.url),
     "utf8",
   );
 
@@ -157,7 +158,7 @@ test("adds production security headers to every route", async () => {
 
 test("Studio handles non-Response function errors and missing Stripe safely", async () => {
   const source = await readFile(
-    new URL("../app/studio/studio-workspace.tsx", import.meta.url),
+    new URL("../app/(pages)/studio/studio-workspace.tsx", import.meta.url),
     "utf8",
   );
   assert.match(source, /typeof clone === "function"/);
@@ -173,7 +174,7 @@ test("Studio handles non-Response function errors and missing Stripe safely", as
 
 test("Studio verifies Stripe returns and confirms delivered credits", async () => {
   const source = await readFile(
-    new URL("../app/studio/studio-workspace.tsx", import.meta.url),
+    new URL("../app/(pages)/studio/studio-workspace.tsx", import.meta.url),
     "utf8",
   );
 
@@ -191,7 +192,7 @@ test("Meta Pixel measures the web purchase funnel without sending checkout ident
     readFile(new URL("../app/meta-pixel-config.ts", import.meta.url), "utf8"),
     readFile(new URL("../public/meta-pixel-bootstrap.js", import.meta.url), "utf8"),
     readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/studio/studio-workspace.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/(pages)/studio/studio-workspace.tsx", import.meta.url), "utf8"),
     readFile(new URL("../worker/index.ts", import.meta.url), "utf8"),
   ]);
 
@@ -216,7 +217,7 @@ test("Meta Pixel measures the web purchase funnel without sending checkout ident
 
 test("Studio discloses seven-day media retention and supports keeping outputs", async () => {
   const source = await readFile(
-    new URL("../app/studio/studio-workspace.tsx", import.meta.url),
+    new URL("../app/(pages)/studio/studio-workspace.tsx", import.meta.url),
     "utf8",
   );
 
@@ -229,11 +230,11 @@ test("Studio discloses seven-day media retention and supports keeping outputs", 
 
 test("Studio exposes model-specific controls and live credit quotes", async () => {
   const source = await readFile(
-    new URL("../app/studio/studio-workspace.tsx", import.meta.url),
+    new URL("../app/(pages)/studio/studio-workspace.tsx", import.meta.url),
     "utf8",
   );
   const pricing = await readFile(
-    new URL("../app/studio/pricing.ts", import.meta.url),
+    new URL("../app/(pages)/studio/pricing.ts", import.meta.url),
     "utf8",
   );
 
@@ -265,7 +266,7 @@ test("Dedicated pricing page shows purchase links, model calculator and sourced 
   assert.match(html, /Some subscriptions can cost less at high usage/);
   assert.match(html, /no cross-platform speed benchmark is claimed/);
   assert.match(html, /openart\.ai\/pricing/);
-  const studio = await readFile(new URL("../app/studio/studio-workspace.tsx", import.meta.url), "utf8");
+  const studio = await readFile(new URL("../app/(pages)/studio/studio-workspace.tsx", import.meta.url), "utf8");
   assert.doesNotMatch(studio, /function CreditsDialog/);
   assert.match(studio, /window\.location\.assign\("\/pricing"\)/);
 });
@@ -320,7 +321,7 @@ test("keeps small text readable across every site route", async () => {
 });
 
 test("personal Studio filters admin-readable projects by owner and refreshes chat balance", async () => {
-  const source = await readFile(new URL("../app/studio/studio-workspace.tsx", import.meta.url), "utf8");
+  const source = await readFile(new URL("../app/(pages)/studio/studio-workspace.tsx", import.meta.url), "utf8");
   assert.match(source, /from\("studio_projects"\)\.select\("id,name"\)\.eq\("user_id", user\.id\)/);
   const chat = source.slice(source.indexOf("async function sendChat()"), source.indexOf("async function refreshGeneration"));
   assert.match(chat, /from\("studio_credit_wallets"\)/);

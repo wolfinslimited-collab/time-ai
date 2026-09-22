@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { readFileSync } from "node:fs";
-import { calculateStudioCredits } from "../app/studio/pricing.ts";
-import { studioCatalogPricing } from "../app/studio/catalog-pricing.ts";
+import { calculateStudioCredits } from "../app/(pages)/studio/pricing.ts";
+import { studioCatalogPricing } from "../app/(pages)/studio/catalog-pricing.ts";
 
 const audit = JSON.parse(readFileSync(new URL("../maintenance/studio-pricing-30pct.json", import.meta.url)));
 

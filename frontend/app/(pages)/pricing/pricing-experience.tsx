@@ -6,7 +6,7 @@ import { studioSupabase } from "../studio/supabase";
 import { studioCatalogPricing } from "../studio/catalog-pricing";
 import { calculateStudioCredits } from "../studio/pricing";
 import { pricingModels } from "./model-data";
-import { trackMetaEvent } from "../meta-pixel";
+import { trackMetaEvent } from "../../meta-pixel";
 
 const initialPacks = [
   {key:"spark",name:"Spark",credits:1000,price_cents:999,currency:"usd",badge:"",description:"Find your next great idea."},
@@ -73,18 +73,18 @@ export default function PricingExperience({ variant: landingVariant = "default" 
   const hfUnit=hfPlan==="plus-monthly"?49/1000:hfPlan==="ultra-monthly"?129/3000:hfPlan==="plus-annual"?39/1000:99/3000;
   const defaultCredits=(key:string)=>{const m=pricingModels.find(m=>m.key===key)!;const p=prices[key]||studioCatalogPricing[key];return calculateStudioCredits(p.credit_cost,m.defaults,p.credit_rules);};
   const buy=(key:string)=>`/studio?buy=${encodeURIComponent(key)}`;
-  return <main className="credit-page">
-    <nav className="credit-nav credit-shell" aria-label="Pricing navigation">
-      <Link className="brand" href="/studio"><img className="brand-mark" src="/timeless-icon.png" alt=""/><span>TIMELESS<small>STUDIO</small></span></Link>
-      <div><a href="#compare">Compare models</a><a href="#packs">Credit packs</a><Link className="credit-nav-back" href="/studio">Back to Studio <ArrowUpRight size={16}/></Link></div>
+  return <main className="credit-page min-h-screen font-sans text-stone-100">
+    <nav className="credit-nav credit-shell flex h-24 items-center justify-between border-b border-white/10 max-md:h-20" aria-label="Pricing navigation">
+      <Link className="brand inline-flex items-center gap-3 text-lg tracking-widest max-md:text-sm" href="/studio"><img className="brand-mark size-9 rounded-lg" src="/timeless-icon.png" alt=""/><span>TIMELESS<small className="mt-1.5 block text-xs tracking-widest text-neutral-400">STUDIO</small></span></Link>
+      <div className="flex items-center gap-7 text-sm"><a href="#compare">Compare models</a><a href="#packs">Credit packs</a><Link className="credit-nav-back inline-flex items-center gap-2.5 rounded-full border border-white/10 px-4 py-2.5 max-md:px-3 max-md:py-2 max-md:text-xs" href="/studio">Back to Studio <ArrowUpRight size={16}/></Link></div>
     </nav>
-    <header className={`credit-hero credit-shell ${landingVariant === "higgsfield" ? "credit-hero-conquest" : ""}`}>
-      <p className="credit-eyebrow"><span/> {landingVariant === "higgsfield" ? "SELECT MODELS COST UP TO 50% LESS" : "CREATIVE FREEDOM. ONE BALANCE."}</p>
-      <h1>{landingVariant === "higgsfield" ? <>Keep the model.<br/><em>Lose the monthly lock-in.</em></> : <>More making.<br/><em>Less monthly.</em></>}</h1>
-      <p>{landingVariant === "higgsfield" ? <>Compare selected AI model costs with Higgsfield, then buy only the credits you need.<br className="credit-desktop"/> No subscription. No monthly reset. Your exact generation price is shown before you create.</> : <>Your next campaign, film, or wild idea starts here.<br className="credit-desktop"/> Powerful AI models. Small, transparent prices. No subscription required.</>}</p>
-      <div className="credit-hero-proof"><span><Check size={16}/> One-time payment</span><span><Check size={16}/> No monthly reset</span><span><Check size={16}/> Choose your model</span></div>
+    <header className={`credit-hero credit-shell text-center py-20 pb-11 max-md:pt-12 max-md:pb-8 ${landingVariant === "higgsfield" ? "credit-hero-conquest" : ""}`}>
+      <p className="credit-eyebrow font-mono text-xs font-normal tracking-widest text-rose-300"><span/> {landingVariant === "higgsfield" ? "SELECT MODELS COST UP TO 50% LESS" : "CREATIVE FREEDOM. ONE BALANCE."}</p>
+      <h1 className="my-6 text-6xl font-normal leading-tight tracking-tight max-md:text-6xl lg:text-7xl xl:text-8xl">{landingVariant === "higgsfield" ? <>Keep the model.<br/><em>Lose the monthly lock-in.</em></> : <>More making.<br/><em>Less monthly.</em></>}</h1>
+      <p className="text-lg leading-relaxed text-neutral-400 max-md:text-base">{landingVariant === "higgsfield" ? <>Compare selected AI model costs with Higgsfield, then buy only the credits you need.<br className="credit-desktop"/> No subscription. No monthly reset. Your exact generation price is shown before you create.</> : <>Your next campaign, film, or wild idea starts here.<br className="credit-desktop"/> Powerful AI models. Small, transparent prices. No subscription required.</>}</p>
+      <div className="credit-hero-proof mt-7 flex flex-wrap justify-center gap-6.5 text-sm text-neutral-300 max-md:gap-3 max-md:text-xs"><span className="inline-flex items-center gap-1.5"><Check size={16}/> One-time payment</span><span className="inline-flex items-center gap-1.5"><Check size={16}/> No monthly reset</span><span className="inline-flex items-center gap-1.5"><Check size={16}/> Choose your model</span></div>
     </header>
-    <section id="packs" className="credit-shell credit-packs" aria-label="Buy credit packs">
+    <section id="packs" className="credit-shell credit-packs grid grid-cols-1 gap-4.5 scroll-mt-8 sm:grid-cols-3 max-md:mx-auto max-md:max-w-md max-md:gap-5.5" aria-label="Buy credit packs">
       {packs.map((p,i)=><article className={`credit-pack ${p.key==="creator"?"credit-popular":""}`} key={p.key}>
         <div className="credit-pack-name"><h2>{p.name}</h2>{p.badge&&<span>{p.badge}</span>}</div>
         <img className="credit-pack-art" src={`/pricing/${["spark","creator","production"].includes(p.key)?p.key:"spark"}.svg`} alt={`${p.name} abstract gradient vector artwork`} width="360" height="250"/>

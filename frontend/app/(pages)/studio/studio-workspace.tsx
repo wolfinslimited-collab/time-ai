@@ -50,8 +50,8 @@ import {
   Waves,
   X,
 } from "lucide-react";
-import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { getMetaBrowserIdentifiers, trackMetaEvent } from "../meta-pixel";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { getMetaBrowserIdentifiers, trackMetaEvent } from "../../meta-pixel";
 import referenceOverrides from './reference-overrides.json';
 import {referenceError,referencePricing,shotSequenceError,type ReferenceConfig} from './references';
 import {ReferencePanel,referenceMessage,type UploadedReference} from './reference-panel';
@@ -59,7 +59,8 @@ import { calculateStudioCredits, type StudioCreditRules } from "./pricing";
 import { modelCatalog, type CatalogModel } from "./model-catalog";
 import { studioSupabase } from "./supabase";
 import { StudioSupport } from "./studio-support";
-import { clearAuthErrorUrl, emailAuthErrorMessage, googleSignInUrl, socialAuthErrorMessage } from "./auth";
+import { AuthDialog, displayName } from "./auth-dialog";
+import { clearAuthErrorUrl, socialAuthErrorMessage } from "./auth";
 
 type MediaType = "image" | "video" | "audio" | "chat";
 type GenerativeMediaType = Exclude<MediaType, "chat">;
@@ -635,7 +636,6 @@ function defaultModelCredits(model: StudioModel) {
   return calculateStudioCredits(model.credit_cost, model.provider_config.defaultInput || {}, model.credit_rules);
 }
 
-function displayName(user: User | null) { return user ? String(user.user_metadata?.full_name || user.email || "Creator") : ""; }
 function modeLabel(mode: MediaType) { return mode === "audio" ? "Sound" : mode.charAt(0).toUpperCase() + mode.slice(1); }
 
 export function StudioWorkspace() {
@@ -1245,59 +1245,6 @@ function ToolLibrary({ mediaType, tools: categoryTools, onMode, onOpen, onRecrea
 
 function ChatWorkspace({ busy, chatPrompt, chatSearch, messages, onNew, onPrompt, onSearch, onSelectThread, onSend, selectedThreadId, threads, user }: { busy: boolean; chatPrompt: string; chatSearch: string; messages: ChatMessage[]; onNew: () => void; onPrompt: (value: string) => void; onSearch: (value: string) => void; onSelectThread: (id: string) => void; onSend: () => void; selectedThreadId: string | null; threads: ChatThread[]; user: User | null }) {
   return <section className="studio-chat-workspace"><aside className="studio-chat-history"><div><strong>Conversations</strong><button type="button" onClick={onNew}><Plus size={15} /> New chat</button></div><label><Search size={14} /><input value={chatSearch} onChange={(event) => onSearch(event.target.value)} placeholder="Search conversations" /></label><nav>{threads.map((thread) => <button className={thread.id === selectedThreadId ? "is-active" : ""} type="button" key={thread.id} onClick={() => onSelectThread(thread.id)}><MessageSquareText size={14} /><span>{thread.title}</span><small>{new Date(thread.updated_at).toLocaleDateString()}</small></button>)}</nav></aside><div className="studio-chat-main">{!messages.length ? <div className="studio-chat-empty"><span><MessageSquareText size={21} /></span><p>TIMELESS CHAT</p><h1>What can we create together?</h1><small>Plan a campaign, write a script, improve a prompt, or develop your next story with GPT 5.2.</small><div>{["Write a 30-second launch script", "Turn my idea into an image prompt", "Plan five creator posts", "Give this story a stronger opening"].map((idea) => <button key={idea} type="button" onClick={() => onPrompt(idea)}>{idea}</button>)}</div></div> : <div className="studio-chat-messages">{messages.map((message) => <article className={`is-${message.role}`} key={message.id}><span>{message.role === "assistant" ? <Sparkles size={15} /> : (user ? displayName(user).slice(0, 2).toUpperCase() : "YOU")}</span><div><p>{message.content}</p>{message.role === "assistant" && <small>{message.credits_charged} credit · {message.provider_tokens?.toLocaleString() || "—"} tokens</small>}</div></article>)}{busy && <article className="is-assistant is-thinking"><span><Sparkles size={15} /></span><div><LoaderCircle size={17} /> Thinking with GPT 5.2…</div></article>}</div>}<div className="studio-chat-composer"><textarea value={chatPrompt} onChange={(event) => onPrompt(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); onSend(); } }} placeholder="Message Timeless Chat…" rows={2} /><div><button type="button" title="Attachments coming next"><Paperclip size={16} /></button><button className="studio-chat-model" type="button"><WandSparkles size={14} /> GPT 5.2 <ChevronDown size={12} /></button><span>1 credit</span><button className="studio-chat-send" type="button" onClick={onSend} disabled={busy || !chatPrompt.trim()}><Send size={16} /></button></div></div></div></section>;
-}
-
-function AuthDialog({ onClose, onCancel, onNotice }: { onClose: () => void; onCancel?: () => void; onNotice: (notice: string) => void }) {
-  const [mode, setMode] = useState<"signin" | "signup">("signin"); const [email, setEmail] = useState(""); const [password, setPassword] = useState(""); const [name, setName] = useState(""); const [busy, setBusy] = useState(false);
-  const [emailError, setEmailError] = useState<string | null>(null);
-  async function submit(event: FormEvent) {
-    event.preventDefault();
-    if (busy || socialInFlight.current) return;
-    setSocialError(null);
-    setEmailError(null);
-    setBusy(true);
-    try {
-      if (mode === "signin") {
-        const { data, error } = await studioSupabase.auth.signInWithPassword({ email: email.trim(), password });
-        if (error) throw error;
-        if (!data.session) throw new Error("No session returned");
-        onClose();
-      } else {
-        const { data, error } = await studioSupabase.auth.signUp({ email: email.trim(), password, options: { data: { full_name: name.trim() }, emailRedirectTo: `${window.location.origin}/studio` } });
-        if (error) throw error;
-        if (!data.session) onNotice("Check your email to finish creating your Timeless account.");
-        onClose();
-      }
-    } catch (error) {
-      setEmailError(emailAuthErrorMessage(error));
-    } finally {
-      setBusy(false);
-    }
-  }
-  const socialInFlight = useRef(false);
-  const [socialBusy, setSocialBusy] = useState(false);
-  const [socialError, setSocialError] = useState<string | null>(null);
-  async function social() {
-    if (busy || socialInFlight.current) return;
-    socialInFlight.current = true;
-    setSocialBusy(true);
-    setSocialError(null);
-    setEmailError(null);
-    try {
-      const url = await googleSignInUrl(studioSupabase.auth, window.location.origin);
-      window.location.assign(url);
-    } catch (error) {
-      setSocialError(socialAuthErrorMessage(error));
-      socialInFlight.current = false;
-      setSocialBusy(false);
-    }
-  }
-  useEffect(() => {
-    const resetSocial = () => { socialInFlight.current = false; setSocialBusy(false); };
-    window.addEventListener("pageshow", resetSocial);
-    return () => window.removeEventListener("pageshow", resetSocial);
-  }, []);
-  return <div className="studio-modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && (onCancel || onClose)()}><section className="studio-modal studio-auth-modal" role="dialog" aria-modal="true" aria-labelledby="studio-auth-title"><button className="studio-modal-close" onClick={onCancel || onClose} type="button" aria-label="Close"><X size={18} /></button><span className="studio-modal-icon"><Sparkles size={20} /></span><p className="studio-modal-kicker">ONE TIMELESS ACCOUNT</p><h2 id="studio-auth-title">{mode === "signin" ? "Welcome back, creator." : "Create your studio."}</h2><p className="studio-modal-copy">Your projects, generations, conversations, and credits stay together across Timeless.</p><div className="studio-social-row"><button type="button" disabled={busy || socialBusy} aria-busy={socialBusy} onClick={social}>{socialBusy ? <><LoaderCircle size={16} aria-hidden="true" /> Connecting to Google…</> : "Continue with Google"}</button></div>{socialError && <p className="studio-auth-error" role="alert">{socialError}</p>}<div className="studio-divider"><span>or use email</span></div><form onSubmit={submit} aria-busy={busy}>{mode === "signup" && <label>Name<input value={name} onChange={(event) => setName(event.target.value)} required autoComplete="name" /></label>}<label>Email<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required autoComplete="email" /></label><label>Password<input type="password" minLength={mode === "signup" ? 8 : undefined} value={password} onChange={(event) => setPassword(event.target.value)} required autoComplete={mode === "signin" ? "current-password" : "new-password"} /></label>{emailError && <p className="studio-auth-error" role="alert">{emailError}</p>}<button className="studio-modal-primary" disabled={busy || socialBusy} type="submit">{busy ? <><LoaderCircle size={16} aria-hidden="true" /> {mode === "signin" ? "Signing in…" : "Creating account…"}</> : mode === "signin" ? "Sign in" : "Create account"}</button></form><button className="studio-auth-switch" disabled={busy || socialBusy} type="button" onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setEmailError(null); setSocialError(null); }}>{mode === "signin" ? "New to Timeless? Create an account" : "Already have an account? Sign in"}</button></section></div>;
 }
 
 function NewProjectDialog({ onClose, onCreate }: { onClose: () => void; onCreate: (name: string) => void }) {

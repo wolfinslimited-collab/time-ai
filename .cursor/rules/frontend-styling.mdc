@@ -1,0 +1,50 @@
+---
+description: Prefer standard Tailwind utilities on elements; avoid custom CSS classes
+globs: frontend/**/*.{tsx,jsx,css}
+alwaysApply: true
+---
+
+# Frontend styling — Tailwind on tags
+
+Put styles directly on elements with **standard Tailwind utilities**. Do not invent named classes in `globals.css` when utilities already cover the look.
+
+## Color palette
+
+Semantic colors live in `frontend/app/globals.css` `@theme` and map to Tailwind default scales. Prefer these over raw `neutral-*` / `rose-*` on marketing UI:
+
+| Token | Role | Tailwind source |
+| --- | --- | --- |
+| `canvas` | Page background | `neutral-950` |
+| `surface` | Cards / panels | `neutral-900` |
+| `elevated` / `elevated-hover` | Raised panels | `neutral-800` / `700` |
+| `foreground` | Primary text on dark | `neutral-50` |
+| `muted` / `subtle` | Secondary text | `neutral-400` / `500` |
+| `accent` / `accent-soft` / `accent-strong` / `accent-deep` | Brand rose | `rose-400` … `600` |
+| `accent-ink` / `paper-accent` | Rose on light | `rose-800` |
+| `secondary` | Warm highlight | `amber-200` |
+| `paper` / `paper-foreground` | Light sections | `stone-100` / `neutral-950` |
+| `success` | Positive / lime callouts | `lime-300` |
+| `ring` | Focus rings | `rose-400` |
+
+Examples: `bg-canvas`, `text-accent`, `bg-paper`, `ring-ring`, `from-accent-soft to-secondary`.
+
+## Do
+
+1. Write `className` on the tag with Tailwind utilities (`flex`, `rounded-3xl`, `bg-canvas`, `lg:grid-cols-4`, …).
+2. Use **default breakpoints only**: `sm`, `md`, `lg`, `xl`, `2xl` (and their `max-*` forms). Never `max-[850px]`, `min-[540px]`, etc.
+3. Prefer default scale tokens (`text-sm`, `p-6`, `rounded-3xl`, `max-w-6xl`, `gap-4`) over arbitrary values (`p-[26px]`, `max-w-[365px]`, `tracking-[0.22em]`).
+4. For hover overlays / gradients, use real child elements (`absolute inset-0 bg-gradient-to-b …`) instead of custom `::before` CSS classes.
+5. Drive scrolled/open UI state with conditional `className` in React, not `[data-*]` rules in CSS.
+
+## Don't
+
+- Add new `.site-*`, `.drama-*`, `.btn-*`, or similar component classes to `globals.css`
+- Use arbitrary breakpoints (`max-[850px]`, `min-[1100px]`, …)
+- Keep a custom class that only `@apply`s a utility string — put those utilities on the tag instead
+- Invent new hex colors in JSX when a palette or Tailwind scale token fits
+
+## Exceptions
+
+- Global base resets (`a { text-decoration }`, fonts / palette via `@theme`) may stay in CSS
+- Studio / legacy surfaces still under large existing CSS may be migrated incrementally; new marketing UI must be Tailwind-on-tags
+- Rare one-off values may use a single arbitrary utility on the element — still no named CSS class for it
