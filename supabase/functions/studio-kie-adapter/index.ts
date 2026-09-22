@@ -40,7 +40,11 @@ Deno.serve(async (request) => {
   }
 });
 
-async function handleSubmission(request: Request, body: KieSubmission) {
+async function handleSubmission(request: Request, body: KieSubmission & { provider?: string }) {
+  const provider = String(body?.provider ?? "kie").trim().toLowerCase();
+  if (provider && provider !== "kie") {
+    throw new StudioError("unsupported_provider", 400, { provider });
+  }
   const clientJobId = String(body?.clientJobId ?? "").trim();
   const model = String(body?.model ?? "").trim();
   const prompt = String(body?.prompt ?? "").trim();

@@ -18,6 +18,7 @@ PROJECT_REF="xmxsqmxuiksldqhtugvv"
 STUDIO_FUNCTIONS=(
   studio-upload-url
   studio-create-generation
+  studio-preflight
   studio-asset-url
   studio-retain-asset
   studio-cleanup
