@@ -5,6 +5,7 @@ import {
   parseGenerationRequest,
   preflightGeneration,
   STUDIO_PLATFORM_LIMITS,
+  toPublicCatalogModel,
   type CatalogModel,
 } from "./regulation.ts";
 import { StudioError } from "./studio.ts";
@@ -73,7 +74,49 @@ Deno.test("regulation catalog parsing keeps provider routing separate from the S
   assertEquals(seedance.provider, "kie");
   assertEquals(seedance.providerModelId, "bytedance/seedance-2-5");
   assertEquals(seedance.mediaType, "video");
+  assertEquals(seedance.description, "");
+  assertEquals(seedance.badge, null);
   assertEquals(modelCapabilities(seedance).supportsShots, true);
+});
+
+Deno.test("public catalog DTO exposes snake_case fields and derived capabilities for the UI", () => {
+  const model = parseCatalogModel({
+    key: "nano-banana-2-1k",
+    name: "Nano Banana 2",
+    description: "Fast image creation and editing.",
+    badge: "Popular",
+    provider: "kie",
+    provider_model_id: "nano-banana-2",
+    media_type: "image",
+    credit_cost: 12,
+    is_active: true,
+    sort_order: 10,
+    parameter_schema: {
+      properties: { resolution: { type: "string", enum: ["1K", "2K"] } },
+    },
+    provider_config: {
+      defaultInput: { resolution: "1K" },
+      minInputs: 0,
+      maxInputs: 14,
+      referenceSlots: [{
+        key: "images",
+        label: "Images",
+        field: "image_input",
+        mimeTypes: ["image/jpeg"],
+        max: 14,
+      }],
+    },
+    credit_rules: { strategy: "fixed" },
+  });
+  const publicModel = toPublicCatalogModel(model);
+  assertEquals(publicModel.key, "nano-banana-2-1k");
+  assertEquals(publicModel.media_type, "image");
+  assertEquals(publicModel.credit_cost, 12);
+  assertEquals(publicModel.badge, "Popular");
+  assertEquals(publicModel.description, "Fast image creation and editing.");
+  assertEquals(publicModel.capabilities.maxInputs, 14);
+  assertEquals(publicModel.capabilities.referenceSlots.length, 1);
+  assertEquals(publicModel.capabilities.referenceSlots[0].key, "images");
 });
 
 Deno.test("preflight merges catalog defaults, validates parameters, quotes credits, and routes Kie as an adapter", () => {

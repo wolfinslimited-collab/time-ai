@@ -27,6 +27,8 @@ export type MediaType = "image" | "video" | "audio";
 export type CatalogModel = {
   key: string;
   name: string;
+  description: string;
+  badge: string | null;
   provider: string;
   providerModelId: string;
   mediaType: MediaType;
@@ -36,6 +38,7 @@ export type CatalogModel = {
   providerConfig: ReferenceConfig & Record<string, unknown>;
   creditRules: StudioCreditRules | null;
   isActive: boolean;
+  sortOrder: number;
 };
 
 export type ReferenceRequest = {
@@ -48,6 +51,8 @@ export type ReferenceRequest = {
 export type GenerationRequest = {
   projectId: string;
   modelKey: string;
+  toolKey: string | null;
+  promptEnhance: boolean;
   prompt: string;
   negativePrompt: string | null;
   idempotencyKey: string;
@@ -113,6 +118,10 @@ export const parseCatalogModel = (row: Record<string, unknown>): CatalogModel =>
   return {
     key,
     name: String(row.name ?? key),
+    description: String(row.description ?? ""),
+    badge: row.badge == null || row.badge === ""
+      ? null
+      : String(row.badge),
     provider,
     providerModelId,
     mediaType,
@@ -130,6 +139,7 @@ export const parseCatalogModel = (row: Record<string, unknown>): CatalogModel =>
       ? row.credit_rules as StudioCreditRules
       : null,
     isActive: row.is_active !== false,
+    sortOrder: Number(row.sort_order ?? 0),
   };
 };
 
@@ -151,9 +161,17 @@ export const parseGenerationRequest = (
   const parameters = isPlainObject(raw.parameters) ? raw.parameters : {};
   const projectId = String(raw.projectId ?? "").trim();
   const modelKey = String(raw.modelKey ?? "").trim();
+  const toolKey = String(raw.toolKey ?? "").trim() || null;
+  const promptEnhance = raw.promptEnhance !== false;
   const idempotencyKey = String(raw.idempotencyKey ?? "").trim();
 
-  if (!MODEL_KEY_PATTERN.test(modelKey)) {
+  if (modelKey && !MODEL_KEY_PATTERN.test(modelKey)) {
+    throw new StudioError("invalid_model_key");
+  }
+  if (toolKey && !MODEL_KEY_PATTERN.test(toolKey)) {
+    throw new StudioError("invalid_tool_key");
+  }
+  if (!modelKey && !toolKey) {
     throw new StudioError("invalid_model_key");
   }
   if (mode === "create" || projectId || inputAssetIds.length > 0) {
@@ -194,6 +212,8 @@ export const parseGenerationRequest = (
   return {
     projectId,
     modelKey,
+    toolKey,
+    promptEnhance,
     prompt,
     negativePrompt,
     idempotencyKey,
@@ -236,6 +256,76 @@ export const modelCapabilities = (model: CatalogModel) => {
       mimeTypes: slot.mimeTypes,
     })),
   };
+};
+
+export type PublicCatalogModel = {
+  key: string;
+  name: string;
+  description: string;
+  media_type: MediaType;
+  credit_cost: number;
+  credit_rules: StudioCreditRules | null;
+  badge: string | null;
+  parameter_schema: Record<string, unknown>;
+  provider_config: CatalogModel["providerConfig"];
+  capabilities: ReturnType<typeof modelCapabilities>;
+};
+
+export type PublicCreditPack = {
+  key: string;
+  name: string;
+  description: string;
+  credits: number;
+  price_cents: number;
+  currency: string;
+  badge: string | null;
+};
+
+export const toPublicCatalogModel = (model: CatalogModel): PublicCatalogModel => ({
+  key: model.key,
+  name: model.name,
+  description: model.description,
+  media_type: model.mediaType,
+  credit_cost: model.creditCost,
+  credit_rules: model.creditRules,
+  badge: model.badge,
+  parameter_schema: model.parameterSchema,
+  provider_config: model.providerConfig,
+  capabilities: modelCapabilities(model),
+});
+
+export const loadActiveCatalogModels = async (
+  admin: SupabaseClient,
+): Promise<CatalogModel[]> => {
+  const { data, error } = await admin
+    .from("studio_models")
+    .select("*")
+    .eq("is_active", true)
+    .order("sort_order");
+  if (error) throw error;
+  return ((data ?? []) as Record<string, unknown>[]).map((row) =>
+    parseCatalogModel(row)
+  );
+};
+
+export const loadActiveCreditPacks = async (
+  admin: SupabaseClient,
+): Promise<PublicCreditPack[]> => {
+  const { data, error } = await admin
+    .from("studio_credit_packs")
+    .select("key, name, description, credits, price_cents, currency, badge")
+    .eq("is_active", true)
+    .order("sort_order");
+  if (error) throw error;
+  return ((data ?? []) as Array<Record<string, unknown>>).map((row) => ({
+    key: String(row.key),
+    name: String(row.name),
+    description: String(row.description ?? ""),
+    credits: Number(row.credits),
+    price_cents: Number(row.price_cents),
+    currency: String(row.currency ?? "usd"),
+    badge: row.badge == null || row.badge === "" ? null : String(row.badge),
+  }));
 };
 
 export const preflightGeneration = (options: {

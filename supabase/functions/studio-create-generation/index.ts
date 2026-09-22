@@ -16,6 +16,7 @@ import {
   preflightGeneration,
   STUDIO_PLATFORM_LIMITS,
 } from "../_shared/regulation.ts";
+import { loadStudioTool, resolveToolRequest } from "../_shared/tools.ts";
 
 Deno.serve(async (request) => {
   if (request.method === "OPTIONS") {
@@ -29,10 +30,15 @@ Deno.serve(async (request) => {
   let creditsReserved = false;
   try {
     const { admin, user } = await authenticateStudioRequest(request);
-    const parsed = parseGenerationRequest(
+    const rawParsed = parseGenerationRequest(
       await request.json().catch(() => ({})),
       "create",
     );
+    const tool = rawParsed.toolKey
+      ? await loadStudioTool(admin, rawParsed.toolKey)
+      : null;
+    const resolved = resolveToolRequest({ tool, request: rawParsed });
+    const parsed = resolved.request;
 
     const { data: existing, error: existingError } = await admin
       .from("studio_generations")
@@ -58,7 +64,7 @@ Deno.serve(async (request) => {
         "user_id",
         user.id,
       ).maybeSingle(),
-      admin.from("studio_models").select("*").eq("key", parsed.modelKey).eq(
+      admin.from("studio_models").select("*").eq("key", resolved.modelKey).eq(
         "is_active",
         true,
       ).maybeSingle(),
@@ -87,24 +93,41 @@ Deno.serve(async (request) => {
     if (!modelRow) throw new StudioError("model_not_available", 404);
     assertUserGenerationCapacity(activeCount ?? 0, recentCount ?? 0);
 
-    const model = parseCatalogModel(modelRow);
+    let model = parseCatalogModel(modelRow);
+    const aligned = resolveToolRequest({
+      tool,
+      request: parsed,
+      modelMediaType: model.mediaType,
+    });
+    const jobRequest = aligned.request;
+    if (aligned.modelKey !== model.key) {
+      const { data: remapped, error: remapError } = await admin
+        .from("studio_models")
+        .select("*")
+        .eq("key", aligned.modelKey)
+        .eq("is_active", true)
+        .maybeSingle();
+      if (remapError) throw remapError;
+      if (!remapped) throw new StudioError("model_not_available", 404);
+      model = parseCatalogModel(remapped);
+    }
     const inputAssets = await loadStudioInputAssets(
       admin,
       user.id,
-      parsed.projectId,
-      parsed.inputAssetIds,
+      jobRequest.projectId,
+      jobRequest.inputAssetIds,
     );
     const verifiedReferences = model.providerConfig.referenceSlots
       ? await hydrateReferenceAssets(
         admin,
         model,
         inputAssets,
-        parsed.referenceRequests,
+        jobRequest.referenceRequests,
       )
       : [];
     const job = preflightGeneration({
       model,
-      request: parsed,
+      request: jobRequest,
       inputAssets,
       verifiedReferences,
       complete: true,
@@ -116,15 +139,16 @@ Deno.serve(async (request) => {
       .insert({
         id: generationId,
         user_id: user.id,
-        project_id: parsed.projectId,
+        project_id: jobRequest.projectId,
         model_key: job.model.key,
+        tool_key: tool?.key ?? null,
         media_type: job.model.mediaType,
         prompt: job.prompt,
         negative_prompt: job.negativePrompt,
         parameters: job.parameters,
         credits_charged: job.credits,
         provider: job.provider.id,
-        idempotency_key: parsed.idempotencyKey,
+        idempotency_key: jobRequest.idempotencyKey,
       })
       .select("*")
       .single();
@@ -134,7 +158,7 @@ Deno.serve(async (request) => {
           .from("studio_generations")
           .select("*")
           .eq("user_id", user.id)
-          .eq("idempotency_key", parsed.idempotencyKey)
+          .eq("idempotency_key", jobRequest.idempotencyKey)
           .single();
         if (raced) {
           return jsonResponse(request, {
@@ -164,7 +188,7 @@ Deno.serve(async (request) => {
     creditsReserved = true;
 
     if (inputAssets.length > 0) {
-      const inputRows = parsed.inputAssetIds.map((assetId, index) => ({
+      const inputRows = jobRequest.inputAssetIds.map((assetId, index) => ({
         generation_id: generationId,
         asset_id: assetId,
         sort_order: index,
@@ -192,12 +216,12 @@ Deno.serve(async (request) => {
       : "image/png";
     const outputAssetId = crypto.randomUUID();
     const outputPath =
-      `${user.id}/${parsed.projectId}/${generationId}/result-0.${extension}`;
+      `${user.id}/${jobRequest.projectId}/${generationId}/result-0.${extension}`;
     const { error: outputAssetError } = await admin.from("studio_assets")
       .insert({
         id: outputAssetId,
         user_id: user.id,
-        project_id: parsed.projectId,
+        project_id: jobRequest.projectId,
         generation_id: generationId,
         role: "output",
         bucket_id: "studio-outputs",
@@ -210,7 +234,7 @@ Deno.serve(async (request) => {
     const inputPayload = [];
     for (
       const asset of inputAssets.sort((a, b) =>
-        parsed.inputAssetIds.indexOf(a.id) - parsed.inputAssetIds.indexOf(b.id)
+        jobRequest.inputAssetIds.indexOf(a.id) - jobRequest.inputAssetIds.indexOf(b.id)
       )
     ) {
       const { data: signed, error: signedError } = await admin.storage

@@ -19,6 +19,7 @@ STUDIO_FUNCTIONS=(
   studio-upload-url
   studio-create-generation
   studio-preflight
+  studio-catalog
   studio-asset-url
   studio-retain-asset
   studio-cleanup

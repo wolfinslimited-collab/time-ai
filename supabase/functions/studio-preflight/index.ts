@@ -14,6 +14,7 @@ import {
   preflightGeneration,
   STUDIO_PLATFORM_LIMITS,
 } from "../_shared/regulation.ts";
+import { loadStudioTool, resolveToolRequest } from "../_shared/tools.ts";
 
 Deno.serve(async (request) => {
   if (request.method === "OPTIONS") {
@@ -26,13 +27,17 @@ Deno.serve(async (request) => {
   try {
     const { admin, user } = await authenticateStudioRequest(request);
     const requestBody = await request.json().catch(() => ({}));
-    const parsed = parseGenerationRequest(requestBody, "preflight");
+    const rawParsed = parseGenerationRequest(requestBody, "preflight");
+    const tool = rawParsed.toolKey
+      ? await loadStudioTool(admin, rawParsed.toolKey)
+      : null;
+    const resolved = resolveToolRequest({ tool, request: rawParsed });
     const [
       { data: modelRow, error: modelError },
       usage,
       { data: wallet, error: walletError },
     ] = await Promise.all([
-      admin.from("studio_models").select("*").eq("key", parsed.modelKey).eq(
+      admin.from("studio_models").select("*").eq("key", resolved.modelKey).eq(
         "is_active",
         true,
       ).maybeSingle(),
@@ -46,7 +51,24 @@ Deno.serve(async (request) => {
     if (walletError) throw walletError;
     if (!modelRow) throw new StudioError("model_not_available", 404);
 
-    const model = parseCatalogModel(modelRow);
+    let model = parseCatalogModel(modelRow);
+    const aligned = resolveToolRequest({
+      tool,
+      request: resolved.request,
+      modelMediaType: model.mediaType,
+    });
+    if (aligned.modelKey !== model.key) {
+      const { data: remapped, error: remapError } = await admin
+        .from("studio_models")
+        .select("*")
+        .eq("key", aligned.modelKey)
+        .eq("is_active", true)
+        .maybeSingle();
+      if (remapError) throw remapError;
+      if (!remapped) throw new StudioError("model_not_available", 404);
+      model = parseCatalogModel(remapped);
+    }
+    const parsed = aligned.request;
     const inputAssets = parsed.projectId && parsed.inputAssetIds.length
       ? await loadStudioInputAssets(
         admin,
@@ -64,6 +86,7 @@ Deno.serve(async (request) => {
     const balance = Number(wallet?.balance ?? 0);
     return jsonResponse(request, {
       ok: true,
+      toolKey: tool?.key ?? null,
       modelKey: job.model.key,
       provider: job.provider.id,
       providerModelId: job.model.providerModelId,

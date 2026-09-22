@@ -20,7 +20,7 @@ Deno.test("Meta payload uses a stable event id for browser/server deduplication"
   const payload = await buildMetaConversionPayload({
     eventName: "InitiateCheckout",
     eventId: "42e93b0e-f289-46d1-a720-26804bb6cc94",
-    eventSourceUrl: "https://timelessapp.ai/studio/compare/higgsfield",
+    eventSourceUrl: "https://timelessapp.ai/pricing",
     externalId: "user-123",
     customData: { currency: "USD", value: 9.99 },
   });
