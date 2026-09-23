@@ -1,16 +1,16 @@
 ---
-description: Prefer standard Tailwind utilities on elements; avoid custom CSS classes
-globs: frontend/**/*.{tsx,jsx,css}
+description: Tailwind-on-tags, no legacy CSS classes, copy colocated with components
+globs: frontend/**/*.{tsx,ts,jsx,css}
 alwaysApply: true
 ---
 
-# Frontend styling — Tailwind on tags
+# Frontend styling & copy
 
-Put styles directly on elements with **standard Tailwind utilities**. Do not invent named classes in `globals.css` when utilities already cover the look.
+Applies to the entire frontend source. Put styles on elements with **standard Tailwind utilities**. Do not invent named classes in `globals.css` when utilities already cover the look.
 
 ## Color palette
 
-Semantic colors live in `frontend/app/globals.css` `@theme` and map to Tailwind default scales. Prefer these over raw `neutral-*` / `rose-*` on marketing UI:
+Semantic colors live in `frontend/app/globals.css` `@theme` and map to Tailwind default scales. Prefer these over raw `neutral-*` / `rose-*`:
 
 | Token | Role | Tailwind source |
 | --- | --- | --- |
@@ -33,18 +33,45 @@ Examples: `bg-canvas`, `text-accent`, `bg-paper`, `ring-ring`, `from-accent-soft
 1. Write `className` on the tag with Tailwind utilities (`flex`, `rounded-3xl`, `bg-canvas`, `lg:grid-cols-4`, …).
 2. Use **default breakpoints only**: `sm`, `md`, `lg`, `xl`, `2xl` (and their `max-*` forms). Never `max-[850px]`, `min-[540px]`, etc.
 3. Prefer default scale tokens (`text-sm`, `p-6`, `rounded-3xl`, `max-w-6xl`, `gap-4`) over arbitrary values (`p-[26px]`, `max-w-[365px]`, `tracking-[0.22em]`).
-4. For hover overlays / gradients, use real child elements (`absolute inset-0 bg-gradient-to-b …`) instead of custom `::before` CSS classes.
-5. Drive scrolled/open UI state with conditional `className` in React, not `[data-*]` rules in CSS.
+4. For hover overlays / gradients / badges / “soon” labels, use real child elements — not custom `::before` / `::after` CSS classes.
+5. Drive scrolled/open/active UI state with conditional `className` in React, not `[data-*]` or bare `is-*` CSS hooks.
+6. When migrating a surface, remove its unused named classes from `globals.css`.
 
 ## Don't
 
-- Add new `.site-*`, `.drama-*`, `.btn-*`, or similar component classes to `globals.css`
+- Add new `.site-*`, `.drama-*`, `.btn-*`, `.studio-*`, or similar component classes to `globals.css`
+- Keep or introduce legacy CSS classNames on components (`studio-modal`, `is-active` via CSS, …)
 - Use arbitrary breakpoints (`max-[850px]`, `min-[1100px]`, …)
 - Keep a custom class that only `@apply`s a utility string — put those utilities on the tag instead
 - Invent new hex colors in JSX when a palette or Tailwind scale token fits
 
+## Copy and hardcoded data
+
+1. User-facing strings, filter lists, error maps, and static chips live in a local `copy/` (or `data/`) module next to the feature — e.g. `components/<feature>/copy/*.ts` or `(pages)/<route>/data/*.ts`.
+2. One concern per module. Components import copy; only dynamic interpolations stay inline.
+3. Do not leave long hardcode lists or UI copy strings inside JSX/components.
+
 ## Exceptions
 
 - Global base resets (`a { text-decoration }`, fonts / palette via `@theme`) may stay in CSS
-- Studio / legacy surfaces still under large existing CSS may be migrated incrementally; new marketing UI must be Tailwind-on-tags
 - Rare one-off values may use a single arbitrary utility on the element — still no named CSS class for it
+- Existing leftover named CSS may remain only until that surface is migrated; new and touched UI must be Tailwind-on-tags
+
+## Examples
+
+```tsx
+// ❌ BAD — legacy CSS class
+<section className="studio-modal">…</section>
+
+// ✅ GOOD — Tailwind on the tag
+<section className="relative w-full max-w-md rounded-2xl bg-elevated p-8 text-foreground">…</section>
+```
+
+```tsx
+// ❌ BAD — inline hardcode
+<button>Create from scratch</button>
+
+// ✅ GOOD — from a local copy module
+import { featureCopy } from "./copy/feature";
+<button>{featureCopy.createFromScratch}</button>
+```
