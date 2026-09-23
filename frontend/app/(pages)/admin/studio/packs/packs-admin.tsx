@@ -4,7 +4,7 @@ import type { Session } from "@supabase/supabase-js";
 import { LoaderCircle, Pencil, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { FormEvent, useCallback, useEffect, useState } from "react";
-import { AuthDialog, displayName } from "../../../../components/studio/auth-dialog";
+import { AuthDialog, displayName } from "../../../../components/auth-dialog";
 import {
   type AdminCreditPack,
   centsToDollarsInput,

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LoaderCircle, LogOut, Menu, X } from "lucide-react";
 import { useEffect, useId, useRef, useState, type MouseEvent, type ReactNode } from "react";
-import { AuthDialog, displayName } from "./studio/auth-dialog";
+import { AuthDialog, displayName } from "./auth-dialog";
 import { Brand } from "./brand";
 import { studioSupabase } from "../lib/studio/supabase";
 
@@ -20,7 +20,7 @@ const links = [
 ] as const;
 
 function isStudioHref(href: string) {
-  return href === "/studio" || href.startsWith("/studio?");
+  return href === "/studio" || href.startsWith("/studio?") || href.startsWith("/studio/");
 }
 
 export function Header({
@@ -156,6 +156,7 @@ export function Header({
       >
         <div className="flex min-w-0 items-center gap-5 justify-self-start sm:gap-8">
           <Brand
+            href="/"
             subtitle={isStudio ? "STUDIO" : "SHORT DRAMAS"}
             onClick={close}
           />
@@ -236,7 +237,7 @@ export function Header({
             </div>
           ) : (
             <Link
-              className="hidden items-center justify-center rounded-full bg-neutral-50 px-5 py-2.5 font-sans text-sm font-medium text-neutral-950 transition-colors duration-150 hover:bg-white lg:inline-flex"
+              className="hidden h-10 items-center justify-center rounded-full bg-neutral-50 px-5 text-sm font-medium text-neutral-950 transition-colors duration-150 hover:bg-white lg:inline-flex"
               href="/studio"
             >
               Start for free
@@ -258,9 +259,9 @@ export function Header({
       </div>
 
       {afterBrand ? (
-        <div className="border-t border-white/10 px-4 py-2 md:hidden sm:px-6">{afterBrand}</div>
+        <div className="px-4 py-2 md:hidden sm:px-6">{afterBrand}</div>
       ) : (
-        center && <div className="border-t border-white/10 px-4 py-2 lg:hidden sm:px-6">{center}</div>
+        center && <div className="px-4 py-2 lg:hidden sm:px-6">{center}</div>
       )}
 
       {!isStudio && open && (

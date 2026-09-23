@@ -3,11 +3,12 @@
 import type { User } from "@supabase/supabase-js";
 import { LoaderCircle, Sparkles, X } from "lucide-react";
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { emailAuthErrorMessage, googleSignInUrl, socialAuthErrorMessage } from "../../lib/studio/auth";
-import { studioSupabase } from "../../lib/studio/supabase";
+import { emailAuthErrorMessage, googleSignInUrl, socialAuthErrorMessage } from "../lib/studio/auth";
+import { studioSupabase } from "../lib/studio/supabase";
+import { authCopy } from "./copy/auth";
 
 export function displayName(user: User | null) {
-  return user ? String(user.user_metadata?.full_name || user.email || "Creator") : "";
+  return user ? String(user.user_metadata?.full_name || user.email || authCopy.defaultDisplayName) : "";
 }
 
 const fieldClass =
@@ -20,11 +21,14 @@ export function AuthDialog({
   onCancel,
   onNotice,
   initialMode = "signin",
+  emailRedirectTo,
 }: {
   onClose: () => void;
   onCancel?: () => void;
   onNotice: (notice: string) => void;
   initialMode?: "signin" | "signup";
+  /** Where email confirmation links return. Defaults to the current page. */
+  emailRedirectTo?: string;
 }) {
   const [mode, setMode] = useState<"signin" | "signup">(initialMode);
   const [email, setEmail] = useState("");
@@ -49,13 +53,14 @@ export function AuthDialog({
         if (!data.session) throw new Error("No session returned");
         onClose();
       } else {
+        const redirectTo = emailRedirectTo || `${window.location.origin}${window.location.pathname}`;
         const { data, error } = await studioSupabase.auth.signUp({
           email: email.trim(),
           password,
-          options: { data: { full_name: name.trim() }, emailRedirectTo: `${window.location.origin}/studio` },
+          options: { data: { full_name: name.trim() }, emailRedirectTo: redirectTo },
         });
         if (error) throw error;
-        if (!data.session) onNotice("Check your email to finish creating your Timeless account.");
+        if (!data.session) onNotice(authCopy.checkEmail);
         onClose();
       }
     } catch (error) {
@@ -100,26 +105,24 @@ export function AuthDialog({
         className="relative w-full max-w-sm rounded-2xl bg-elevated px-8 pb-7 pt-10 text-center shadow-none"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="studio-auth-title"
+        aria-labelledby="auth-dialog-title"
       >
         <button
           className="absolute top-3.5 right-3.5 grid size-8 place-items-center rounded-lg bg-transparent text-muted transition-colors hover:bg-elevated-hover hover:text-foreground"
           onClick={onCancel || onClose}
           type="button"
-          aria-label="Close"
+          aria-label={authCopy.close}
         >
           <X size={18} />
         </button>
         <span className="mx-auto mb-5 grid size-10 place-items-center rounded-xl bg-elevated-hover text-foreground">
           <Sparkles size={18} />
         </span>
-        <h2 id="studio-auth-title" className="m-0 text-2xl font-semibold tracking-tight text-foreground">
-          Welcome to Timeless
+        <h2 id="auth-dialog-title" className="m-0 text-2xl font-semibold tracking-tight text-foreground">
+          {authCopy.title}
         </h2>
         <p className="mx-auto mt-2.5 mb-7 max-w-xs text-sm leading-relaxed text-muted">
-          {mode === "signin"
-            ? "Log in or sign up to bring your ideas to life."
-            : "Join Timeless and keep your projects, generations, and credits in one place."}
+          {mode === "signin" ? authCopy.signInLead : authCopy.signUpLead}
         </p>
         <div className="grid gap-2.5">
           <button
@@ -131,10 +134,10 @@ export function AuthDialog({
           >
             {socialBusy ? (
               <>
-                <LoaderCircle className="animate-spin" size={16} aria-hidden="true" /> Connecting to Google…
+                <LoaderCircle className="animate-spin" size={16} aria-hidden="true" /> {authCopy.connectingGoogle}
               </>
             ) : (
-              "Continue with Google"
+              authCopy.continueGoogle
             )}
           </button>
         </div>
@@ -145,13 +148,13 @@ export function AuthDialog({
         )}
         <div className="my-5 flex items-center gap-3 text-xs text-subtle">
           <span className="h-px flex-1 bg-elevated-hover" aria-hidden="true" />
-          <span>or</span>
+          <span>{authCopy.or}</span>
           <span className="h-px flex-1 bg-elevated-hover" aria-hidden="true" />
         </div>
         <form className="grid gap-3.5 text-left" onSubmit={submit} aria-busy={busy}>
           {mode === "signup" && (
             <label className="grid gap-2 text-sm font-medium text-muted">
-              Name
+              {authCopy.name}
               <input
                 className={fieldClass}
                 value={name}
@@ -162,7 +165,7 @@ export function AuthDialog({
             </label>
           )}
           <label className="grid gap-2 text-sm font-medium text-muted">
-            Email
+            {authCopy.email}
             <input
               className={fieldClass}
               type="email"
@@ -173,7 +176,7 @@ export function AuthDialog({
             />
           </label>
           <label className="grid gap-2 text-sm font-medium text-muted">
-            Password
+            {authCopy.password}
             <input
               className={fieldClass}
               type="password"
@@ -197,12 +200,12 @@ export function AuthDialog({
             {busy ? (
               <>
                 <LoaderCircle className="animate-spin" size={16} aria-hidden="true" />{" "}
-                {mode === "signin" ? "Signing in…" : "Creating account…"}
+                {mode === "signin" ? authCopy.signingIn : authCopy.creatingAccount}
               </>
             ) : mode === "signin" ? (
-              "Sign in"
+              authCopy.signIn
             ) : (
-              "Create account"
+              authCopy.createAccount
             )}
           </button>
         </form>
@@ -216,7 +219,7 @@ export function AuthDialog({
             setSocialError(null);
           }}
         >
-          {mode === "signin" ? "New to Timeless? Create an account" : "Already have an account? Sign in"}
+          {mode === "signin" ? authCopy.switchToSignUp : authCopy.switchToSignIn}
         </button>
       </section>
     </div>
