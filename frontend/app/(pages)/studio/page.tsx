@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { StudioWorkspace } from "./studio-workspace";
+import { Suspense } from "react";
+import { StudioExplore } from "./studio-explore";
 
 export const metadata: Metadata = {
   title: "Timeless Studio — Create with AI",
@@ -8,5 +9,9 @@ export const metadata: Metadata = {
 };
 
 export default function StudioPage() {
-  return <StudioWorkspace />;
+  return (
+    <Suspense fallback={<main className="min-h-screen bg-canvas" />}>
+      <StudioExplore />
+    </Suspense>
+  );
 }
