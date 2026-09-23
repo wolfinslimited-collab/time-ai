@@ -25,17 +25,24 @@ async function render(pathname = "/") {
 
 async function readStudioSources() {
   const paths = [
-    "../app/(pages)/studio/studio-workspace.tsx",
+    "../app/(pages)/studio/studio-explore.tsx",
+    "../app/(pages)/studio/create/studio-create.tsx",
     "../app/(pages)/studio/hooks/use-studio-invoke.ts",
     "../app/(pages)/studio/hooks/use-studio-catalog.ts",
     "../app/(pages)/studio/hooks/use-studio-checkout.ts",
     "../app/(pages)/studio/hooks/use-studio-workspace-data.ts",
+    "../app/(pages)/studio/hooks/use-studio-shell.ts",
     "../app/(pages)/studio/data/showcase-examples.ts",
     "../app/lib/studio/studio-types.ts",
     "../app/lib/studio/studio-errors.ts",
+    "../app/lib/studio/studio-routes.ts",
     "../app/components/studio/studio-dialogs.tsx",
     "../app/components/studio/studio-model-picker.tsx",
     "../app/components/studio/tool-library.tsx",
+    "../app/components/studio/create-workspace.tsx",
+    "../app/components/studio/copy/dialogs.ts",
+    "../app/components/studio/copy/create.ts",
+    "../app/components/studio/copy/model-picker.ts",
   ];
   const chunks = await Promise.all(
     paths.map((path) => readFile(new URL(path, import.meta.url), "utf8")),
@@ -50,10 +57,10 @@ test("server-renders the Timeless short-drama product page", async () => {
 
   const html = await response.text();
   assert.match(html, /<title>Timeless: Short Dramas<\/title>/i);
-  assert.match(html, /mobile streaming app for addictive short dramas/i);
+  assert.match(html, /addictive (?:vertical )?short dramas/i);
   assert.match(html, /The Frozen Mind/i);
   assert.match(html, /Get it on Google Play/i);
-  assert.match(html, /Download for iPhone/i);
+  assert.match(html, /Download on the App Store/i);
   assert.match(html, /frozen-mind-02\.jpg/i);
   assert.match(html, /series\/dqn\.png/i);
   assert.match(html, /series\/kusanscar\.png/i);
@@ -111,40 +118,81 @@ test("server-renders the iOS and Android download page", async () => {
   assert.match(html, /play\.google\.com\/store\/apps\/details\?id=com\.wolfine\.app/);
 });
 
-test("server-renders the native Timeless Studio desktop workspace", async () => {
+test("server-renders the Timeless Studio explore page", async () => {
   const response = await render("/studio");
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
   const html = await response.text();
   assert.match(html, /<title>Timeless Studio — Create with AI<\/title>/i);
-  assert.match(html, /studio-tool-library/i);
+  assert.match(html, /Steal the shot\. Make it yours/i);
   assert.match(html, /Create image/i);
   assert.match(html, /Sound/i);
-  assert.match(html, /Chat/i);
-  assert.match(html, /My studio/i);
+  assert.match(html, /Studio/i);
+  assert.doesNotMatch(html, />Chat</i);
+  assert.match(html, /Create from scratch/i);
   assert.match(html, />Explore</i);
   assert.match(html, /Trending creations to recreate/i);
   assert.match(html, /All image tools/i);
   assert.match(html, /Last stop before dawn/i);
   assert.match(html, /The white citadel/i);
-  assert.match(html, /class="studio-mark" src="\/timeless-icon\.png"/i);
+  assert.match(html, /src="\/timeless-icon\.png"/i);
   assert.doesNotMatch(html, /flutter_bootstrap\.js|\/studio-app\//i);
   assert.doesNotMatch(html, /class="studio-mark"[^>]*>T</i);
 });
 
-test("Studio showcase copies and loads prompts into the generator", async () => {
+test("Studio showcase copies prompts and navigates to create workspace", async () => {
   const source = await readStudioSources();
 
   assert.match(source, /navigator\.clipboard\.writeText\(example\.prompt\)/);
-  assert.match(source, /setPrompt\(example\.prompt\)/);
+  assert.match(source, /writeStudioCreateSeed\(\{ toolKey, prompt: example\.prompt, style: example\.style \}\)/);
+  assert.match(source, /router\.push\(studioCreateHref\(toolKey\)\)/);
   assert.match(source, /Prompt copied and ready to recreate/);
-  assert.match(source, /aria-label=\{`Recreate \$\{example\.title\}`\}/);
+  assert.match(source, /aria-label=\{`\$\{exploreCopy\.recreate\} \$\{example\.title\}`\}/);
   assert.match(source, /studio-showcase\/neon-diner\.jpg/);
   assert.match(source, /studio-showcase\/direct-flash-night\.jpg/);
   assert.match(source, /studio-showcase\/liquid-cobalt\.jpg/);
   assert.match(source, /studio-showcase\/petal-freeze\.jpg/);
   assert.match(source, /studio-showcase\/strawberry-atelier\.jpg/);
+});
+
+test("create workspace route wires tool query into StudioCreate", async () => {
+  const page = await readFile(new URL("../app/(pages)/studio/create/page.tsx", import.meta.url), "utf8");
+  const create = await readFile(new URL("../app/(pages)/studio/create/studio-create.tsx", import.meta.url), "utf8");
+  const workspace = await readFile(
+    new URL("../app/components/studio/create-workspace.tsx", import.meta.url),
+    "utf8",
+  );
+  const explore = await readFile(new URL("../app/(pages)/studio/studio-explore.tsx", import.meta.url), "utf8");
+  const routes = await readFile(new URL("../app/lib/studio/studio-routes.ts", import.meta.url), "utf8");
+
+  assert.match(page, /StudioCreate/);
+  assert.match(page, /Create — Timeless Studio/);
+  assert.match(create, /searchParams\.get\("tool"\)/);
+  assert.match(create, /variant="create"/);
+  assert.match(create, /onUseAsReference/);
+  assert.match(create, /onReusePrompt/);
+  assert.match(create, /onNewThread/);
+  assert.match(create, /TopUpDialog/);
+  assert.match(create, /pendingGenerateRef/);
+  assert.match(create, /setTopUpOpen\(true\)/);
+  assert.match(
+    create,
+    /if \(workspace\.balance < quotedCredits\) \{\s*setTopUpOpen\(true\);\s*return;\s*\}[\s\S]*Describe what you want to create first/,
+  );
+  assert.doesNotMatch(create, /openPricing\(\)/);
+  assert.match(explore, /TopUpDialog/);
+  assert.match(explore, /onOpenPricing=\{\(\) => setTopUpOpen\(true\)\}/);
+  assert.doesNotMatch(explore, /onOpenPricing=\{shell\.openPricing\}/);
+  assert.match(workspace, /createCopy\.threadAria/);
+  assert.match(workspace, /h-\[calc\(100dvh-4rem\)\]/);
+  assert.match(workspace, /createCopy\.referenceTile/);
+  assert.match(workspace, /createCopy\.lookTile/);
+  assert.match(workspace, /disabled=\{generating \|\| uploading \|\| checkingOut\}/);
+  assert.doesNotMatch(workspace, /pb-72/);
+  assert.match(explore, /variant="explore"/);
+  assert.match(explore, /router\.push\(studioCreateHref\(tool\.key\)\)/);
+  assert.match(routes, /\/studio\/create\?tool=/);
 });
 
 test("adds production security headers to every route", async () => {
@@ -222,7 +270,8 @@ test("Studio discloses seven-day media retention and supports keeping outputs", 
   assert.match(source, /Files expire after 7 days unless kept/);
   assert.match(source, /studio-retain-asset/);
   assert.match(source, /Expires in \$\{days\} days/);
-  assert.match(source, /\}\s+Keep\s*<\/button>/);
+  assert.match(source, /createCopy\.keep/);
+  assert.match(source, /keep: "Keep"/);
   assert.match(source, /File expired/);
 });
 
@@ -245,7 +294,8 @@ test("Studio loads models from the regulated catalog and quotes credits live", a
   assert.doesNotMatch(source, /video-models\.json/);
   assert.doesNotMatch(source, /reference-overrides\.json/);
   assert.match(source, /quotedCredits/);
-  assert.match(source, /From \{defaultModelCredits\(model\)\} cr/);
+  assert.match(source, /modelPickerCopy\.fromCredits\(defaultModelCredits\(model\)\)/);
+  assert.match(source, /fromCredits: \(credits: number\) => `From \$\{credits\} cr`/);
   assert.match(pricing, /rules\.multiplierKey/);
   assert.match(pricing, /Math\.ceil\(rate \* multiplier \+ extra\)/);
 });
@@ -267,7 +317,9 @@ test("Dedicated pricing page shows purchase links, model calculator and sourced 
   assert.match(html, /openart\.ai\/pricing/);
   const studio = await readStudioSources();
   assert.doesNotMatch(studio, /function CreditsDialog/);
-  assert.match(studio, /window\.location\.assign\("\/pricing"\)/);
+  assert.match(studio, /TopUpDialog/);
+  assert.match(studio, /title: "Not enough credits"/);
+  assert.match(studio, /onOpenPricing=\{\(\) => setTopUpOpen\(true\)\}/);
   const pricingSource = await readFile(new URL("../app/(pages)/pricing/pricing-experience.tsx", import.meta.url), "utf8");
   assert.match(pricingSource, /studio-catalog/);
   assert.doesNotMatch(pricingSource, /from\("studio_models"\)/);
@@ -281,8 +333,8 @@ test("uses the original Timeless icon for favicon and shared brand marks", async
   for (const pathname of ["/privacy", "/terms", "/pricing", "/refund"]) {
     const response = await render(pathname);
     const html = await response.text();
-    assert.match(html, /class="brand-mark" src="\/timeless-icon\.png"/i);
-    assert.doesNotMatch(html, /class="brand-mark"[^>]*>\s*T\s*</i);
+    assert.match(html, /src="\/timeless-icon\.png"/i);
+    assert.doesNotMatch(html, />\s*T\s*<\/(?:span|div|a)>/i);
   }
 });
 
@@ -322,12 +374,9 @@ test("keeps small text readable across every site route", async () => {
   assert.doesNotMatch(css, /font-size:\s*(?:[1-9]|10)px/);
 });
 
-test("personal Studio filters admin-readable projects by owner and refreshes chat balance", async () => {
+test("personal Studio filters admin-readable projects by owner", async () => {
   const source = await readStudioSources();
   assert.match(source, /from\("studio_projects"\)\.select\("id,name"\)\.eq\("user_id", user\.id\)/);
-  const chat = source.slice(source.indexOf("async function sendChat()"), source.indexOf("async function refreshGeneration"));
-  assert.match(chat, /from\("studio_credit_wallets"\)/);
-  assert.match(chat, /setBalance\(Number\(wallet\.balance\)\)/);
 });
 
 test("Studio and pricing load credit packs from studio-catalog, not a hardcoded buy allowlist", async () => {

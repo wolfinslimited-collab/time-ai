@@ -55,9 +55,11 @@ test("email failures explain invalid credentials, verification, rate limits, and
 
 test("sign-in errors render inside the form and Apple stays removed", async () => {
   const { readFile } = await import("node:fs/promises");
-  const source = await readFile(new URL("../app/components/studio/auth-dialog.tsx", import.meta.url), "utf8");
+  const source = await readFile(new URL("../app/components/auth-dialog.tsx", import.meta.url), "utf8");
+  const copy = await readFile(new URL("../app/components/copy/auth.ts", import.meta.url), "utf8");
   assert.doesNotMatch(source, /Continue with Apple|social\("apple"\)/);
   assert.match(source, /<form[^>]+onSubmit=\{submit\}[\s\S]*emailError && \(\s*<p className=\{errorClass\} role="alert"/);
-  assert.match(source, /Signing in…/);
+  assert.match(source, /authCopy\.signingIn/);
+  assert.match(copy, /signingIn: "Signing in…"/);
   assert.match(source, /minLength=\{mode === "signup" \? 8 : undefined\}/);
 });

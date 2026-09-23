@@ -443,3 +443,7 @@ verify_jwt = false
 [functions.studio-catalog]
 # Public active model + pack catalog; no auth required.
 verify_jwt = false
+
+[functions.studio-preflight]
+# Authenticate bearer tokens inside the function; accept modern publishable keys.
+verify_jwt = false
